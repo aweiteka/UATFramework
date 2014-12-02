@@ -1,6 +1,6 @@
 # Proof of Concept
 
-A lightweight Behavior Driven Development (BDD) test framework to perform user acceptance testing (UAT) based on Python BDD Behave.
+A lightweight Behavior Driven Development (BDD) test framework to perform user acceptance testing (UAT).
 
 ## Goals
 * enable automation accross multiple applications. Automation must be easy to write against application APIs.
@@ -15,6 +15,7 @@ A lightweight Behavior Driven Development (BDD) test framework to perform user a
 * Simple SSH interface for remote host control via Ansible.
 
 ## Getting started
-[Behave documentaion](http://pythonhosted.org/behave/)
+[py.test-bdd documentation](https://pypi.python.org/pypi/pytest-bdd) under eval
+[Behave documentaion](http://pythonhosted.org/behave/) under eval
 [Ansible API](http://docs.ansible.com/developing_api.html)
 See product documentation for application APIs
