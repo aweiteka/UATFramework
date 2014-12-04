@@ -26,7 +26,7 @@ Automation needs to be *really simple* to write and maintain. If you can write a
 1. Familiarize yourself with [Behave documentation](http://pythonhosted.org/behave/)
 1. Understand how the examples work in this repo.
 1. Make a copy of the configuration file and customize: `cp uat.template uat.cfg`
-1. Create an `ansible_inventory` file for any hosts remote commands are run on
+1. Create an `ansible_inventory` file for any hosts remote commands are run on: `cp ansible_inventory.template ansible_inventory`
 1. Install python dependencies: `[sudo] pip install -r requirements.txt`
 1. Execute tests (assumes current working directory is base of this repo)
   * Run them all: `behave`

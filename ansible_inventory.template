@@ -1,0 +1,9 @@
+# use `ssh-copy-id` for password-less commands
+[satellite]
+mysatserver.example.com ansible_ssh_user=root
+
+[somehost]
+192.168.0.2 ansible_ssh_user=root
+
+[localhost]
+127.0.0.1 ansible_connection=local
