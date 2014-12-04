@@ -1,0 +1,18 @@
+[general]
+ansible_inventory = ansible_inventory
+
+# Define product API parameters
+
+[satellite]
+url = https://sat6.example.com
+api_path = katello/api/v2
+user = admin
+pass = secret
+
+[openshiftv2]
+url = https://openshift.redhat.com
+# token from openshift.com or CLI command "rhc authorization list"
+auth_token = asdf1234asdf5678
+user = user
+pass = secret
+api_path = broker/rest

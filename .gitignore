@@ -52,3 +52,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Real config files
+*.cfg
+
+# Ansible inventory file
+ansible_inventory
