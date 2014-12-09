@@ -1,5 +1,6 @@
+'''test methods related to Satllite 6'''
+
 from behave import *
-import json
 
 # POST example
 @when('organization "{name}" is created')

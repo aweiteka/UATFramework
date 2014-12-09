@@ -1,5 +1,6 @@
+'''test methods for openshift'''
+
 from behave import *
-import json
 
 @given('an openshift service')
 def step(context):
