@@ -1,5 +1,6 @@
-[general]
-ansible_inventory = ansible_inventory
+[ansible]
+inventory = ansible_inventory
+sudo = True
 
 # Define product API parameters
 
