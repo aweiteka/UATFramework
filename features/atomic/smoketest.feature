@@ -2,12 +2,10 @@ Feature: Atomic host smoke test
   Describes minimum functionality for Docker and Kubernetes
   TODO: OSTree upgrade and rollback
 
-  Background: Single atomic host is provisioned
+  Scenario: Host provisioned and subscribed
       Given "atomic" host
-       Then "atomic" host is auto-subscribed
-
-  Scenario: Host subscribed
-      Given subscription status is ok on "atomic"
+       When "atomic" host is auto-subscribed
+        and subscription status is ok on "atomic"
        Then "1" entitlement is consumed on "atomic"
 
   Scenario: Docker smoke test
@@ -26,6 +24,6 @@ Feature: Atomic host smoke test
        Then service "mypod" is verified
 
   Scenario: dev
-      Given "puppet" is already running on "ATOMIC"
-        and "tftp" is already installed on "atomic"
+      Given "atomic" host
+        and "tftp" is already installed on "ATOMIC"
        Then service "asdf" is verified

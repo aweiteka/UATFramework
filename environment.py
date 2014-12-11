@@ -73,20 +73,28 @@ def before_all(context):
 
         import ansible.runner
         import os
+        import json
 
         inventory = None
 
         if host.isupper():
+            # try to match local env var
+            # if None then make sure dynamic inventory var is not None
+            # then dynamically add list of hosts from dynamic inventory var as a host group
+
             # dynamic inventory via environment vars
-            if not os.getenv(host):
-                print "Environment variable matching '%s' not found" % host
+            dynamic_inventory_env_var = config.get('ansible', 'dynamic_inventory_env_var')
+            if not os.getenv(dynamic_inventory_env_var):
+                print "Environment variable matching '%s' not found" % dynamic_inventory_env_var
                 return False
             else:
-                # TODO: not implemented
-                #dynamic_host = os.getenv(host)
-                #inventory = ansible.inventory.Inventory(dynamic_host)
-                print "Environment variable matched '%s' but not implemented" % host
-                return False
+                dynamic_hosts = os.getenv(dynamic_inventory_env_var)
+                inventory_json = json.dumps({ host: [dynamic_hosts] })
+                print inventory_json
+                inventory = inventory_json
+                #inventory = json.loads(inventory_json)
+                #inventory = ansible.inventory.Inventory(json.loads(inventory_json))
+                print "Environment variable matched '%s', value '%s', but not implemented" % (host, dynamic_hosts)
         else:
             # use inventory file
             inventory = ansible.inventory.Inventory(config.get('ansible', 'inventory'))
