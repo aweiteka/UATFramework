@@ -2,36 +2,43 @@
 
 from behave import *
 
+@given(u'"{host}" hosts from dynamic inventory')
+def step_impl(context, host):
+    context.dynamic_hosts = host
+
 @given(u'"{rpm}" is already installed on "{host}"')
 def step_impl(context, rpm, host):
     '''Install RPM on host but fail if not already installed'''
-    r = context.remote_cmd(host,
-                           "yum",
+    r = context.remote_cmd("yum",
+                           host,
                            module_args='name=%s' % rpm)
     if r:
-        assert r['changed'] is False
+        for i in r:
+            assert i['changed'] is False
     else:
         assert False
 
 @given(u'"{unit}" is already running on "{host}"')
 def step_impl(context, unit, host):
     '''Ensure service is running but fail if not'''
-    r = context.remote_cmd(host,
-                           "service",
+    r = context.remote_cmd("service",
+                           host,
                            module_args='name=%s state=running enabled=yes' % unit)
     if r:
-        assert r['changed'] is False
+        for i in r:
+            assert i['changed'] is False
     else:
         assert False
 
 @given(u'"{unit}" is started on "{host}"')
 def step_impl(context, unit, host):
     '''Start service but fail if already running'''
-    r = context.remote_cmd(host,
-                           unit,
+    r = context.remote_cmd('service',
+                           host,
                            module_args='name=%s state=running enabled=yes' % unit)
     if r:
-        assert r['changed'] is True
+        for i in r:
+            assert i['changed'] is True
     else:
         assert False
 
@@ -40,8 +47,7 @@ def step(context, host):
     '''Verify we can ping the host
 
     host: a host from the ansible inventory file'''
-    #TODO: if host isupper() pull from env variable
-    assert context.remote_cmd(host, 'ping')
+    assert context.remote_cmd('ping', host)
 
 @given('run command "{cmd}" on "{host}"')
 @when('run command "{cmd}" on "{host}"')
@@ -61,6 +67,6 @@ def step(context, cmd, host):
         module, args = cmd.split(' ', 1)
     else:
         module = cmd
-    assert context.remote_cmd(host,
-                              module,
+    assert context.remote_cmd(module,
+                              host,
                               module_args=args)

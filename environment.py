@@ -63,40 +63,26 @@ def before_all(context):
 
     context.api = api
 
-    def remote_cmd(host, cmd, **kwargs):
+    def remote_cmd(cmd, host=None, **kwargs):
         '''Interface to run a command on a remote host using Ansible modules
 
         host: name of host of remote target system in ansible inventory file
               or environment variable
         cmd: an Ansible module
-        module_args: module args in the form of "key1=value1 key2=value2"'''
+        module_args: module args in the form of "key1=value1 key2=value2"
+        Returns list of values if all hosts successful, otherwise False'''
 
         import ansible.runner
-        import os
         import json
 
         inventory = None
 
-        if host.isupper():
-            # try to match local env var
-            # if None then make sure dynamic inventory var is not None
-            # then dynamically add list of hosts from dynamic inventory var as a host group
-
-            # dynamic inventory via environment vars
-            dynamic_inventory_env_var = config.get('ansible', 'dynamic_inventory_env_var')
-            if not os.getenv(dynamic_inventory_env_var):
-                print "Environment variable matching '%s' not found" % dynamic_inventory_env_var
-                return False
-            else:
-                dynamic_hosts = os.getenv(dynamic_inventory_env_var)
-                inventory_json = json.dumps({ host: [dynamic_hosts] })
-                print inventory_json
-                inventory = inventory_json
-                #inventory = json.loads(inventory_json)
-                #inventory = ansible.inventory.Inventory(json.loads(inventory_json))
-                print "Environment variable matched '%s', value '%s', but not implemented" % (host, dynamic_hosts)
+        if context.dynamic_hosts:
+            host = context.dynamic_hosts
+            # use custom dynamic hosts script
+            inventory = ansible.inventory.Inventory(config.get('ansible', 'dynamic_inventory_script'))
         else:
-            # use inventory file
+            # use static ansible inventory file
             inventory = ansible.inventory.Inventory(config.get('ansible', 'inventory'))
 
         result = ansible.runner.Runner(
@@ -115,13 +101,12 @@ def before_all(context):
             print result
             return False
         else:
-            for key, val in result['contacted'].iteritems():
-                # FIXME: this probably won't work with lists of hosts
-                #        one host may fail and another succeed
-                if "failed" in val:
-                    print val['msg']
+            values = []
+            for key, value in result['contacted'].iteritems():
+                if "failed" in value:
                     return False
                 else:
-                    return val
+                    values.append(value)
+            return values
 
     context.remote_cmd = remote_cmd

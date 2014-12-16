@@ -20,6 +20,7 @@ In addition to unit testing and system testing we need a simple framework to per
 Automation needs to be *really simple* to write and maintain. If you can write a user story, a bash script and make sense of API documentation to make `GET` and `PUT` calls you should be able to use this framework.
 * Consistent, simple interface for application APIs.
 * Simple method for running commands on remote hosts.
+* Support dynamic host discovery for CI workflows.
 
 ## Getting started
 
@@ -29,14 +30,23 @@ Automation needs to be *really simple* to write and maintain. If you can write a
 1. Create an `ansible_inventory` file for any hosts remote commands are run on: `cp ansible_inventory.template ansible_inventory`
 1. Install python dependencies: `[sudo] pip install -r requirements.txt`
 1. Execute tests (assumes current working directory is base of this repo)
-  * Run them all: `behave`
-  * Run a specific feature file: `behave features/myfile.feature`
-  * Run specific scenario(s) by keyword: `behave -n <keyword>`
-  * Run by tag keyword: `behave -t <tag>`
+  * Run them all (very unusual): `behave`
+  * Run a specific feature file (common): `behave features/myfile.feature`
+  * Run specific scenario(s) by keyword (great for debugging): `behave -n <scenario_keyword>`
   * add `--dry-run` to see output but don't execute
 
 ### Debugging
 By default debug print statements are captured with all stdout and stderr also. This makes debugging difficult. Pass argument `--no-capture` when running Behave to view debug statements. For stderr pass in `--no-capture-stderr`.
+
+Remote commands are executed via Ansible and SSH. For new commands try using ansible CLI then add them to a steps method.
+
+Static inventory:
+
+    $ ansible <host_group_from_inventory> -i ansible_inventory -m command -a <some shell command>
+
+Dynamic inventory script. Example parses 'resources.json' for a specific CI system:
+
+    $ ansible cihosts -i central_ci_dynamic_hosts.py -m command -a <some shell command>
 
 ## Reference
 
