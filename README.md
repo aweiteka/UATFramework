@@ -17,7 +17,7 @@ In addition to unit testing and system testing we need a simple framework to per
 
 ## Design
 
-Automation needs to be *really simple* to write and maintain. If you can write a user story, a bash script and make sense of API documentation to make `GET` and `PUT` calls you should be able to use this framework.
+Automation needs to be *really simple* to write and maintain. If you can write a user story, a bash script and make sense of API documentation to make `GET` and `POST` calls you should be able to use this framework.
 * Consistent, simple interface for application APIs.
 * Simple method for running commands on remote hosts.
 * Support dynamic host discovery for CI workflows.
@@ -26,14 +26,23 @@ Automation needs to be *really simple* to write and maintain. If you can write a
 
 1. Familiarize yourself with [Behave documentation](http://pythonhosted.org/behave/)
 1. Understand how the examples work in this repo.
-1. Make a copy of the configuration file and customize: `cp uat.template uat.cfg`
-1. Create an `ansible_inventory` file for any hosts remote commands are run on: `cp ansible_inventory.template ansible_inventory`
+1. Make a copy of the configuration file and customize: `cp uat.cfg.sample uat.cfg`
+1. Create an `ansible_inventory` file for any hosts remote commands are run on: `cp ansible_inventory.sample ansible_inventory`
 1. Install python dependencies: `[sudo] pip install -r requirements.txt`
 1. Execute tests (assumes current working directory is base of this repo)
   * Run them all (very unusual): `behave`
   * Run a specific feature file (common): `behave features/myfile.feature`
   * Run specific scenario(s) by keyword (great for debugging): `behave -n <scenario_keyword>`
   * add `--dry-run` to see output but don't execute
+
+## Writing your first test
+
+1. Always start with a feature. This is a great time to freely think like a user and the end goal. Consider pairing up with a colleague and write the feature in 30 minutes.
+1. Run the feature you just wrote: `behave features/mynew.feature`
+1. Copy the output into a steps file. Some of these are already covered in existing steps. Keep them organized by target application.
+1. Delete redundant steps and re-word your feature lines as necessary. If a step is not implemented, fail it with `assert False` until it's implemented.
+1. Build up the steps files to support the feature. Get it green.
+1. Check in the feature and get into a CI job right away. Watch it fail, fix, rinse, repeat.
 
 ### Debugging
 By default debug print statements are captured with all stdout and stderr also. This makes debugging difficult. Pass argument `--no-capture` when running Behave to view debug statements. For stderr pass in `--no-capture-stderr`.
