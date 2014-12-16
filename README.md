@@ -57,6 +57,23 @@ Dynamic inventory script. Example parses 'resources.json' for a specific CI syst
 
     $ ansible cihosts -i central_ci_dynamic_hosts.py -m command -a <some shell command>
 
+## Running as docker container
+
+This is a work in progress.
+
+1. You may need to turn off selinux so docker can read the bindmounted files on the host.
+
+    [sudo] setenforce 0
+
+1. There are a bunch of dependencies to mount. SSH keys are problematic.
+
+    [sudo] docker run -it \
+           -v /path/to/.ssh:/.ssh \
+           -v /path/to/UATFramework/resources.json:/uatframework/resources.json \
+           -v /path/to/UATFramework/uat.cfg:/uatframework/uat.cfg \
+           -v /path/to/UATFramework/ansible_inventory:/uatframework/ansible_inventory \
+           aweiteka/uatframework [features/my.feature]
+
 ## Reference
 
 General [product documentation](https://access.redhat.com/documentation)
