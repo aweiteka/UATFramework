@@ -63,16 +63,16 @@ This is a work in progress.
 
 1. You may need to turn off selinux so docker can read the bindmounted files on the host.
 
-    [sudo] setenforce 0
+        [sudo] setenforce 0
 
 1. There are a bunch of dependencies to mount. SSH keys are problematic.
 
-    [sudo] docker run -it \
-           -v /path/to/.ssh:/.ssh \
-           -v /path/to/UATFramework/resources.json:/uatframework/resources.json \
-           -v /path/to/UATFramework/uat.cfg:/uatframework/uat.cfg \
-           -v /path/to/UATFramework/ansible_inventory:/uatframework/ansible_inventory \
-           aweiteka/uatframework [features/my.feature]
+        [sudo] docker run -it \
+               -v /path/to/.ssh:/.ssh \
+               -v /path/to/UATFramework/resources.json:/uatframework/resources.json \
+               -v /path/to/UATFramework/uat.cfg:/uatframework/uat.cfg \
+               -v /path/to/UATFramework/ansible_inventory:/uatframework/ansible_inventory \
+               aweiteka/uatframework:wip [features/my.feature]
 
 ## Reference
 
