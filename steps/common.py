@@ -30,7 +30,7 @@ def step_impl(context, unit, host):
     else:
         assert False
 
-@given(u'"{unit}" is started on "{host}"')
+@then(u'"{unit}" is started and enabled on "{host}"')
 def step_impl(context, unit, host):
     '''Start service but fail if already running'''
     r = context.remote_cmd('service',

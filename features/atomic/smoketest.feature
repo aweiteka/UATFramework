@@ -17,11 +17,20 @@ Background: Atomic hosts are discovered
        When image "rhel7" is pulled on "cihosts"
        Then rpm "bind" is installed in "rhel7" on "cihosts"
 
-  Scenario: Kubernetes smoke test
+  Scenario Outline: Kubernetes services
       Given "kubernetes" is already installed on "cihosts"
         and "etcd" is already installed on "cihosts"
-        and "kubelet" is started on "cihosts"
-        and "etcd" is started on "cihosts"
-       When application "guestbook" is run from "cihosts"
-       Then application "guestbook" is verified
+       Then "<service>" is started and enabled on "cihosts"
 
+  Examples: kubernetes services
+    | service                 |
+    | etcd                    |
+    | kube-apiserver          |
+    | kube-controller-manager |
+    | kube-scheduler          |
+    | kube-proxy              |
+    | kubelet                 |
+
+  Scenario: kubectl smoke test
+       Given "0" pods on "cihosts"
+         and "0" services on "cihosts"
