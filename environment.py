@@ -63,7 +63,7 @@ def before_all(context):
 
     context.api = api
 
-    def remote_cmd(cmd, host=None, **kwargs):
+    def remote_cmd(cmd, host=None, remote_user=None, **kwargs):
         '''Interface to run a command on a remote host using Ansible modules
 
         host: name of host of remote target system in ansible inventory file
@@ -90,6 +90,7 @@ def before_all(context):
                  inventory=inventory,
                  pattern=host,
                  sudo=config.get('ansible', 'sudo'),
+                 remote_user=remote_user,
                  **kwargs
             ).run()
 
