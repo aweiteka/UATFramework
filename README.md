@@ -28,7 +28,11 @@ Automation needs to be *really simple* to write and maintain. If you can write a
 1. Understand how the examples work in this repo.
 1. Make a copy of the configuration file and customize: `cp uat.cfg.sample uat.cfg`
 1. Create an `ansible_inventory` file for any hosts remote commands are run on: `cp ansible_inventory.sample ansible_inventory`
-1. Install python dependencies: `[sudo] pip install -r requirements.txt`
+1. Install python dependencies using pip. You may need to install python-devel and gcc first.
+
+        [sudo] yum install -y python-devel gcc
+        [sudo] pip install -r requirements.txt
+
 1. Execute tests (assumes current working directory is base of this repo)
   * Run them all (very unusual): `behave`
   * Run a specific feature file (common): `behave features/myfile.feature`
