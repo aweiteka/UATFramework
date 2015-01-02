@@ -72,7 +72,7 @@ This is a work in progress.
 1. There are a bunch of dependencies to mount. SSH keys are problematic.
 
         [sudo] docker run -it \
-               -v /path/to/.ssh:/.ssh \
+               -v /path/to/.ssh:/root/.ssh \
                -v /path/to/UATFramework/resources.json:/uatframework/resources.json \
                -v /path/to/UATFramework/uat.cfg:/uatframework/uat.cfg \
                -v /path/to/UATFramework/ansible_inventory:/uatframework/ansible_inventory \
