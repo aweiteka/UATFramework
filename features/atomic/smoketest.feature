@@ -34,3 +34,6 @@ Background: Atomic hosts are discovered
   Scenario: kubectl smoke test
        Given "0" pods on "cihosts"
          and "0" services on "cihosts"
+
+  Scenario: Unregister
+       Then "cihosts" host is unsubscribed and unregistered

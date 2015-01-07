@@ -17,6 +17,15 @@ def step_impl(context, host):
                            module_args="subscription-manager register --username %s --password %s --auto-attach" % (user, passwd))
     assert r
 
+@then('"{host}" host is unsubscribed and unregistered')
+def step_impl(context, host):
+    '''Unregister remote host'''
+
+    r = context.remote_cmd("command",
+                           host,
+                           module_args="subscription-manager unregister")
+    assert r
+
 @then(u'subscription status is ok on "{host}"')
 def step_impl(context, host):
     r = context.remote_cmd("command",
