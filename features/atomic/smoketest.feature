@@ -7,7 +7,7 @@ Background: Atomic hosts are discovered
 
   Scenario: Host provisioned and subscribed
       Given "cihosts" host
-       When "cihosts" host is auto-subscribed
+       When "cihosts" host is auto-subscribed to "stage"
        Then subscription status is ok on "cihosts"
         and "1" entitlement is consumed on "cihosts"
 
