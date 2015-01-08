@@ -7,7 +7,7 @@ def before_all(context):
     import requests
 
     config = ConfigParser.ConfigParser()
-    config.read('uat.cfg')
+    config.read('config/uat.cfg')
 
     def api(app, path, payload=None, method=None):
         '''Generic interface for making application API calls

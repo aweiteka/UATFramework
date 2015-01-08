@@ -1,7 +1,7 @@
 [ansible]
-inventory = ansible_inventory
+inventory = config/ansible_inventory
 sudo = True
-dynamic_inventory_script = central_ci_dynamic_hosts.py
+dynamic_inventory_script = config/central_ci_dynamic_hosts.py
 
 [redhat]
 user = some_user

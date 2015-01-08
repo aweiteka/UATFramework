@@ -26,11 +26,11 @@ Automation needs to be *really simple* to write and maintain. If you can write a
 
 1. Familiarize yourself with [Behave documentation](http://pythonhosted.org/behave/)
 1. Understand how the examples work in this repo.
-1. Make a copy of the configuration file and customize: `cp uat.cfg.sample uat.cfg`
-1. Create an `ansible_inventory` file for any hosts remote commands are run on: `cp ansible_inventory.sample ansible_inventory`
+1. Make a copy of the configuration file and customize: `cp config/uat.cfg.sample config/uat.cfg`
+1. Create an `ansible_inventory` file for any hosts remote commands are run on: `cp config/ansible_inventory.sample config/ansible_inventory`
 1. Install python dependencies using pip. You may need to install python-devel and gcc first.
 
-        [sudo] yum install -y python-devel gcc
+        [sudo] yum install -y pip python-devel gcc
         [sudo] pip install -r requirements.txt
 
 1. Execute tests (assumes current working directory is base of this repo)
@@ -55,11 +55,11 @@ Remote commands are executed via Ansible and SSH. For new commands try using ans
 
 Static inventory:
 
-    $ ansible <host_group_from_inventory> -i ansible_inventory -m command -a <some shell command>
+    $ ansible <host_group_from_inventory> -i config/ansible_inventory -m command -a <some shell command>
 
 Dynamic inventory script. Example parses 'resources.json' for a specific CI system:
 
-    $ ansible cihosts -i central_ci_dynamic_hosts.py -m command -a <some shell command>
+    $ ansible cihosts -i config/central_ci_dynamic_hosts.py -m command -a <some shell command>
 
 ## Running as docker container
 
@@ -74,9 +74,8 @@ This is a work in progress.
         [sudo] docker run -it \
                -v /path/to/.ssh:/root/.ssh \
                -v /path/to/UATFramework/resources.json:/uatframework/resources.json \
-               -v /path/to/UATFramework/uat.cfg:/uatframework/uat.cfg \
-               -v /path/to/UATFramework/ansible_inventory:/uatframework/ansible_inventory \
-               aweiteka/uatframework:wip [features/my.feature]
+               -v /path/to/UATFramework/config:/uatframework/config \
+               aweiteka/uatframework:wip [features/my.feature] [behave_opts]
 
 ## Reference
 

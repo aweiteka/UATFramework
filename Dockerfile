@@ -7,6 +7,6 @@ RUN pip install -r /uatframework/requirements.txt
 ADD features /uatframework/features
 ADD steps /uatframework/steps
 ADD environment.py /uatframework/environment.py
-ADD central_ci_dynamic_hosts.py /uatframework/central_ci_dynamic_hosts.py
+ADD config/central_ci_dynamic_hosts.py /uatframework/config/central_ci_dynamic_hosts.py
 WORKDIR /uatframework
 ENTRYPOINT ["/usr/bin/behave"]

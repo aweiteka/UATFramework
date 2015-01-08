@@ -4,7 +4,7 @@ from behave import *
 import ConfigParser
 
 config = ConfigParser.ConfigParser()
-config.read('uat.cfg')
+config.read('config/uat.cfg')
 
 @when(u'"{host}" host is auto-subscribed')
 def step_impl(context, host):
