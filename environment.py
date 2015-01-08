@@ -77,7 +77,7 @@ def before_all(context):
 
         inventory = None
 
-        if context.dynamic_hosts:
+        if hasattr(context, 'dynamic_hosts'):
             host = context.dynamic_hosts
             # use custom dynamic hosts script
             inventory = ansible.inventory.Inventory(config.get('ansible', 'dynamic_inventory_script'))
