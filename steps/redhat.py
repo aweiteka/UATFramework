@@ -6,16 +6,31 @@ import ConfigParser
 config = ConfigParser.ConfigParser()
 config.read('config/uat.cfg')
 
+@when(u'"{host}" host is auto-subscribed to "{env}"')
 @when(u'"{host}" host is auto-subscribed')
-def step_impl(context, host):
+def step_impl(context, host, env="prod"):
     '''Subscribe remote machine'''
 
-    user = config.get('redhat', 'user')
-    passwd = config.get('redhat', 'pass')
-    r = context.remote_cmd("command",
-                           host,
-                           module_args="subscription-manager register --username %s --password %s --auto-attach" % (user, passwd))
-    assert r
+    env_section = "redhat-%s" % env
+    user = config.get(env_section, 'user')
+    passwd = config.get(env_section, 'pass')
+    hostname = config.get(env_section, 'hostname')
+    baseurl = config.get(env_section, 'baseurl')
+
+    if hostname:
+        # we are registering against non-prod, update rhsm.conf
+        assert context.remote_cmd("ini_file",
+               host,
+               module_args="dest=/etc/rhsm/rhsm.conf section=server option=hostname value=%s backup=yes" % hostname)
+    if hostname:
+        # we are registering against non-prod, update rhsm.conf
+        assert context.remote_cmd("ini_file",
+               host,
+               module_args="dest=/etc/rhsm/rhsm.conf section=rhsm option=baseurl value=%s backup=yes" % baseurl)
+
+    assert context.remote_cmd("command",
+           host,
+           module_args="subscription-manager register --username %s --password %s --auto-attach" % (user, passwd))
 
 @then('"{host}" host is unsubscribed and unregistered')
 def step_impl(context, host):

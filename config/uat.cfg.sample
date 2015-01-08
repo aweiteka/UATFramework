@@ -3,9 +3,17 @@ inventory = config/ansible_inventory
 sudo = True
 dynamic_inventory_script = config/central_ci_dynamic_hosts.py
 
-[redhat]
+[redhat-prod]
 user = some_user
 pass = changeme
+hostname =
+baseurl =
+
+[redhat-stage]
+user = some_user
+pass =  changeme
+hostname = stage.example.com
+baseurl = "http://stage.example.com/"
 
 # Define product API parameters
 
