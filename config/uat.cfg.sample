@@ -15,6 +15,9 @@ pass =  changeme
 hostname = stage.example.com
 baseurl = "http://stage.example.com/"
 
+[vagrant]
+user = root
+
 # Define product API parameters
 
 [satellite]
