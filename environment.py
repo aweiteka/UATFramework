@@ -63,7 +63,7 @@ def before_all(context):
 
     context.api = api
 
-    def remote_cmd(cmd, host=None, **kwargs):
+    def remote_cmd(cmd, host=None, sudo=None, **kwargs):
         '''Interface to run a command on a remote host using Ansible modules
 
         host: name of host of remote target system in ansible inventory file
@@ -85,11 +85,17 @@ def before_all(context):
             # use static ansible inventory file
             inventory = ansible.inventory.Inventory(config.get('ansible', 'inventory'))
 
+        # the user can specify to not use 'sudo' per command or use the config file value
+        if sudo is not None:
+            sudo = sudo
+        else:
+            sudo = config.get('ansible', 'sudo')
+
         result = ansible.runner.Runner(
                  module_name=cmd,
                  inventory=inventory,
                  pattern=host,
-                 sudo=config.get('ansible', 'sudo'),
+                 sudo=sudo,
                  #remote_user=remote_user,
                  **kwargs
             ).run()
