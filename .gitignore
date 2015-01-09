@@ -58,3 +58,7 @@ target/
 
 # Ansible inventory file
 ansible_inventory
+
+# vim swap files
+*.swp
+*.swo
