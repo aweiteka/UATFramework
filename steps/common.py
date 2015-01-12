@@ -6,6 +6,10 @@ from behave import *
 def step_impl(context, host):
     context.dynamic_hosts = host
 
+@given(u'"{host}" host from static inventory')
+def step_impl(context, host):
+    context.static_host = host
+
 @given(u'"{rpm}" is already installed on "{host}"')
 def step_impl(context, rpm, host):
     '''Install RPM on host but fail if not already installed'''

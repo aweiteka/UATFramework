@@ -81,8 +81,11 @@ def before_all(context):
             host = context.dynamic_hosts
             # use custom dynamic hosts script
             inventory = ansible.inventory.Inventory(config.get('ansible', 'dynamic_inventory_script'))
-        else:
+        elif hasattr(context, 'static_host'):
             # use static ansible inventory file
+            inventory = ansible.inventory.Inventory(config.get('ansible', 'inventory'))
+        else:
+            # default to static file
             inventory = ansible.inventory.Inventory(config.get('ansible', 'inventory'))
 
         # the user can specify to not use 'sudo' per command or use the config file value
