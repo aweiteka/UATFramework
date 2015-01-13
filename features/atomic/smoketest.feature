@@ -11,13 +11,19 @@ Background: Atomic hosts are discovered
        Then subscription status is ok on "cihosts"
         and "1" entitlement is consumed on "cihosts"
 
-  Scenario: 2. Docker smoke test
+  Scenario: 2. Upgrade ostree
+      Given active tree version is at "7.0.0" on "cihosts"
+       When atomic "upgrade" is run on "cihosts"
+       Then wait "60" seconds for "cihosts" to reboot
+       Then active tree version is at "7.0.1" on "cihosts"
+
+  Scenario: 3. Docker smoke test
       Given "docker" is already installed on "cihosts"
         and "docker" is already running on "cihosts"
        When image "rhel7" is pulled on "cihosts"
        Then rpm "bind" is installed in "rhel7" on "cihosts"
 
-  Scenario Outline: 3. Kubernetes services
+  Scenario Outline: 4. Kubernetes services
       Given "kubernetes" is already installed on "cihosts"
         and "etcd" is already installed on "cihosts"
        Then "<service>" is started and enabled on "cihosts"
@@ -31,9 +37,9 @@ Background: Atomic hosts are discovered
     | kube-proxy              |
     | kubelet                 |
 
-  Scenario: 4. kubectl smoke test
+  Scenario: 5. kubectl smoke test
        Given "0" pods on "cihosts"
          and "0" services on "cihosts"
 
-  Scenario: 5. Unregister
+  Scenario: 6. Unregister
        Then "cihosts" host is unsubscribed and unregistered
