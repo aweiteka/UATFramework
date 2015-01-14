@@ -62,3 +62,6 @@ ansible_inventory
 # vim swap files
 *.swp
 *.swo
+
+# log files
+*.log

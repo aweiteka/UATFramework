@@ -1,5 +1,24 @@
 '''Magically loaded by behave defining helper methods and other things'''
 
+# define the necessary logging features to write messages to a file
+import logging
+from datetime import datetime
+
+now_string = datetime.now().strftime('%d-%b-%Y-%H:%M:%S')
+logfile = 'logs/' + now_string + '_behave.log'
+
+file_logger = logging.getLogger()
+file_logger.setLevel(logging.INFO)
+
+fh = logging.FileHandler(filename=logfile)
+fh.setLevel(logging.INFO)
+
+my_formatter = logging.Formatter('%(asctime)s - %(message)s')
+
+fh.setFormatter(my_formatter)
+
+file_logger.addHandler(fh)
+
 def before_all(context):
     '''Behave-specific function that runs before anything else'''
 
@@ -73,7 +92,6 @@ def before_all(context):
         Returns list of values if all hosts successful, otherwise False'''
 
         import ansible.runner
-        import json
 
         inventory = None
 
@@ -94,25 +112,28 @@ def before_all(context):
         else:
             sudo = config.get('ansible', 'sudo')
 
-        result = ansible.runner.Runner(
+        # the 'context' object can basically hold whatever we want.
+        # if we stash the result from Ansible, we can inspect it or log it
+        # later
+        context.result = ansible.runner.Runner(
                  module_name=cmd,
                  inventory=inventory,
                  pattern=host,
                  sudo=sudo,
                  #remote_user=remote_user,
                  **kwargs
-            ).run()
+        ).run()
 
         # TODO support lists of hosts
-        if result['dark']:
-            print result['dark']
+        if context.result['dark']:
+            print context.result['dark']
             return False
-        elif not result['contacted']:
-            print result
+        elif not context.result['contacted']:
+            print context.result
             return False
         else:
             values = []
-            for key, value in result['contacted'].iteritems():
+            for key, value in context.result['contacted'].iteritems():
                 if "failed" in value:
                     return False
                 else:
@@ -120,3 +141,13 @@ def before_all(context):
             return values
 
     context.remote_cmd = remote_cmd
+
+# After each step, we will examine the status and log any results from Ansible
+# if they exist
+def after_step(context, step):
+    if step.status == "failed":
+        file_logger.info('Behave Step Name: %s' % step.name)
+        file_logger.info('Step Error Message: %s' % step.error_message)
+        if hasattr(context, 'result'):
+            file_logger.info('Ansible Output: %s' % context.result)
+
