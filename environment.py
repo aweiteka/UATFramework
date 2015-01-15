@@ -6,7 +6,7 @@ from datetime import datetime
 import os
 
 if not os.path.exists('logs'):
-    os.makedirs(logs)
+    os.makedirs('logs')
 
 now_string = datetime.now().strftime('%Y-%b-%d-%H:%M:%S')
 
