@@ -3,8 +3,13 @@
 # define the necessary logging features to write messages to a file
 import logging
 from datetime import datetime
+import os
 
-now_string = datetime.now().strftime('%d-%b-%Y-%H:%M:%S')
+if not os.path.exists('logs'):
+    os.makedirs(logs)
+
+now_string = datetime.now().strftime('%Y-%b-%d-%H:%M:%S')
+
 logfile = 'logs/' + now_string + '_behave.log'
 
 file_logger = logging.getLogger()
