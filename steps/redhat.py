@@ -22,7 +22,7 @@ def step_impl(context, host, env="prod"):
         assert context.remote_cmd("ini_file",
                host,
                module_args="dest=/etc/rhsm/rhsm.conf section=server option=hostname value=%s backup=yes" % hostname)
-    if hostname:
+    if baseurl:
         # we are registering against non-prod, update rhsm.conf
         assert context.remote_cmd("ini_file",
                host,
