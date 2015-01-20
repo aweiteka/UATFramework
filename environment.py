@@ -155,7 +155,8 @@ def before_all(context):
 # After each step, we will examine the status and log any results from Ansible
 # if they exist
 def after_step(context, step):
-    if os.getenv("BEHAVE_DEBUG_LOGGING") is not None:
+    if (os.getenv("BEHAVE_DEBUG_LOGGING") is not None
+            and os.getenv("BEHAVE_DEBUG_LOGGING") == "True"):
         file_logger.info('Behave Step Name: %s' % step.name)
         file_logger.info('Step Error Message: %s' % step.error_message)
         if hasattr(context, 'result'):
