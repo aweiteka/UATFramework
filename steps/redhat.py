@@ -46,7 +46,8 @@ def step_impl(context, host):
     r = context.remote_cmd("command",
                            host,
                            module_args="subscription-manager status")
-    assert r
+    for i in r:
+        assert 'Status: Current' in i['stdout']
 
 @then(u'"{total}" entitlement is consumed on "{host}"')
 def step_impl(context, total, host):
