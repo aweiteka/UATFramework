@@ -5,12 +5,17 @@ import logging
 from datetime import datetime
 import os
 
-if not os.path.exists('logs'):
-    os.makedirs('logs')
+if os.getenv("WORKSPACE") is not None:
+    logdir = os.getenv("WORKSPACE") + "/logs"
+else:
+    logdir = "logs"
+
+if not os.path.exists(logdir):
+    os.makedirs(logdir)
 
 now_string = datetime.now().strftime('%Y-%b-%d-%H:%M:%S')
 
-logfile = 'logs/' + now_string + '_behave.log'
+logfile = logdir + '/' + now_string + '_behave.log'
 
 file_logger = logging.getLogger()
 file_logger.setLevel(logging.INFO)
@@ -150,7 +155,12 @@ def before_all(context):
 # After each step, we will examine the status and log any results from Ansible
 # if they exist
 def after_step(context, step):
-    if step.status == "failed":
+    if os.getenv("BEHAVE_DEBUG_LOGGING") is not None:
+        file_logger.info('Behave Step Name: %s' % step.name)
+        file_logger.info('Step Error Message: %s' % step.error_message)
+        if hasattr(context, 'result'):
+            file_logger.info('Ansible Output: %s' % context.result)
+    elif step.status == "failed":
         file_logger.info('Behave Step Name: %s' % step.name)
         file_logger.info('Step Error Message: %s' % step.error_message)
         if hasattr(context, 'result'):
