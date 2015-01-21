@@ -5,22 +5,52 @@ from behave import *
 @given(u'"{host}" hosts from dynamic inventory')
 def step_impl(context, host):
     context.dynamic_hosts = host
+    context.target_host = host 
 
 @given(u'"{host}" host from static inventory')
 def step_impl(context, host):
     context.static_host = host
+    context.target_host = host 
 
 @given(u'"{rpm}" is already installed on "{host}"')
 def step_impl(context, rpm, host):
     '''Install RPM on host but fail if not already installed'''
     r = context.remote_cmd("yum",
                            host,
-                           module_args='name=%s' % rpm)
+                           remote_user="root",
+                           module_args='name=%s state=present' % rpm)
     if r:
         for i in r:
             assert i['changed'] is False
     else:
         assert False
+
+@given(u'"{rpm}" is already installed')
+def step_impl(context, rpm):
+    '''Install RPM on host but fail if not already installed'''
+    context.execute_steps(u"""
+    given "{package_name}" is already installed on "{host}"
+    """.format(package_name=rpm,host=context.target_host))
+
+@given(u'"{rpms}" are already installed on "{host}"')
+def step_impl(context, rpms, host):
+    '''Install RPM on host but fail if not already installed'''
+    r = context.remote_cmd("yum",
+                           host,
+                           remote_user="root",
+                           module_args='name=%s' % rpms)
+    if r:
+        for i in r:
+            assert i['changed'] is False
+    else:
+        assert False
+
+@given(u'"{rpms}" are already installed')
+def step_impl(context, rpms):
+    '''Install RPM on host but fail if not already installed'''
+    context.execute_steps(u"""
+    "given {package_names}" are already installed on "{host}"
+    """.format(package_names=rpms,host=context.target_host))
 
 @given(u'"{unit}" is already running on "{host}"')
 def step_impl(context, unit, host):
