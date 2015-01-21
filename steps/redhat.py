@@ -7,7 +7,7 @@ config = ConfigParser.ConfigParser()
 config.read('config/uat.cfg')
 
 @when(u'"{host}" host is auto-subscribed to "{env}"')
-@when(u'"{host}" host is auto-subscribed')
+@when(u'"{host}" is auto-subscribed')
 def step_impl(context, host, env="prod"):
     '''Subscribe remote machine'''
 
