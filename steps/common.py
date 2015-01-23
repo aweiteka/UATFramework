@@ -81,7 +81,7 @@ def step(context, host):
     '''Verify we can ping the host
 
     host: a host from the ansible inventory file'''
-    assert context.remote_cmd(cmd='ping')
+    assert context.remote_cmd('ping', host)
 
 @given('run command "{cmd}" on "{host}"')
 @when('run command "{cmd}" on "{host}"')
