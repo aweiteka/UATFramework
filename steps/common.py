@@ -7,7 +7,7 @@ def step_impl(context, host):
     context.inventory = "dynamic"
     context.target_host = host 
 
-@given(u'"{host}" host from static inventory')
+@given(u'"{host}" hosts from static inventory')
 def step_impl(context, host):
     context.inventory = "static"
     context.target_host = host 
