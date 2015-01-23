@@ -105,13 +105,9 @@ def before_all(context):
 
         inventory = None
 
-        if hasattr(context, 'dynamic_hosts'):
-            host = context.dynamic_hosts
+        if context.inventory == "dyanmic":
             # use custom dynamic hosts script
             inventory = ansible.inventory.Inventory(config.get('ansible', 'dynamic_inventory_script'))
-        elif hasattr(context, 'static_host'):
-            # use static ansible inventory file
-            inventory = ansible.inventory.Inventory(config.get('ansible', 'inventory'))
         else:
             # default to static file
             inventory = ansible.inventory.Inventory(config.get('ansible', 'inventory'))
@@ -121,6 +117,14 @@ def before_all(context):
             sudo = sudo
         else:
             sudo = config.get('ansible', 'sudo')
+
+        # check value of host. if host is not None, we assume the user has
+        # supplied a host arg to remote_cmd(). otherwise, it is passed
+        # along in the context object.
+        if host is not None:
+            host = host
+        else:
+            host = context.target_host
 
         # the 'context' object can basically hold whatever we want.
         # if we stash the result from Ansible, we can inspect it or log it

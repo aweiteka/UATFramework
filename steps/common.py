@@ -4,12 +4,12 @@ from behave import *
 
 @given(u'"{host}" hosts from dynamic inventory')
 def step_impl(context, host):
-    context.dynamic_hosts = host
+    context.inventory = "dynamic"
     context.target_host = host 
 
 @given(u'"{host}" host from static inventory')
 def step_impl(context, host):
-    context.static_host = host
+    context.inventory = "static"
     context.target_host = host 
 
 @given(u'"{rpm}" is already installed on "{host}"')
@@ -81,7 +81,7 @@ def step(context, host):
     '''Verify we can ping the host
 
     host: a host from the ansible inventory file'''
-    assert context.remote_cmd('ping', host)
+    assert context.remote_cmd(cmd='ping')
 
 @given('run command "{cmd}" on "{host}"')
 @when('run command "{cmd}" on "{host}"')
