@@ -2,12 +2,18 @@
 
 from behave import *
 
-@when('image "{image}" is pulled on "{host}"')
-def step_impl(context, image, host):
+@when('docker pull "{image}"')
+def step_impl(context, image):
     '''docker pull image'''
     assert context.remote_cmd('command',
-                               host,
+                               remote_user='root',
                                module_args='docker pull %s' % image)
+
+@then(u'remove docker image "{image}"')
+def step_impl(context, image):
+    assert context.remote_cmd('command',
+                               remote_user='root',
+                               module_args='docker rmi %s' % image)
 
 @then(u'rpm "{rpm}" is installed in "{image}" on "{host}"')
 def step_impl(context, rpm, image, host):
