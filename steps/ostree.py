@@ -42,3 +42,28 @@ def step_impl(context, seconds, host):
                                      host=host,
                                      sudo=False)
     assert ping_result
+
+@when(u'"{src_file}" is copied to "{dest_file}"')
+def step_imp(context, src_file, dest_file):
+    # Copy a file to a destination file on a remote host
+    # Currently defaults to 0744 for permissions
+    copy_result = context.remote_cmd(cmd='copy',
+                                     module_args='src=%s dest=%s mode=0744' % (src_file, dest_file))
+
+    assert copy_result
+
+@when(u'"{script}" is executed')
+def step_impl(context, script):
+    # Execute a script (any file really) on the remote host
+    exec_result = context.remote_cmd(cmd='command',
+                                     module_args=script)
+
+    assert exec_result
+
+@then(u'"{remote_file}" is fetched to "{local_dir}"')
+def step_impl(context, remote_file, local_dir):
+    # Retrieve a remote file to a local directory
+    fetch_result = context.remote_cmd(cmd='fetch',
+                                      module_args='src=%s dest=%s flat=yes' % (remote_file, local_dir))
+
+    assert fetch_result
