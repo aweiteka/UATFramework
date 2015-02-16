@@ -11,7 +11,9 @@ def step_impl(context, version, host):
     version_result = context.remote_cmd(cmd='command',
                                         host=host,
                                         sudo=False,
-                                        module_args='atomic status')
+                                        module_args='atomic host status')
+
+    assert version_result
 
     # gnarly regex to search through the active version line
     status_re = re.compile(r'^\* '
