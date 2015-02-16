@@ -1,5 +1,6 @@
 '''ostree test methods'''
 
+import re
 import time
 from behave import *
 
@@ -12,11 +13,25 @@ def step_impl(context, version, host):
                                         sudo=False,
                                         module_args='atomic status')
 
+    # gnarly regex to search through the active version line
+    status_re = re.compile(r'^\* '
+                           r'(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
+                           r' {5}(?P<version>\d+.\d+.\d+)'
+                           r' {5}(?P<id>\w{10})'
+                           r' {5}(?P<osname>[\w\-]+)'
+                           r' {5}(?P<refspec>[\w:\-/]+)')
+
     # remote_cmd returns a list, so iterate through the list looking for the
     # particular version string
+    active_version = None
     if version_result:
         for item in version_result:
-            assert ("* %s" % version) in item['stdout']
+            for l in item['stdout'].split('\n'):
+                m = status_re.search(l)
+                if m:
+                    active_version = m.group('version')
+
+    assert active_version is not None
 
 @when(u'atomic "{atomic_cmd}" is run on "{host}"')
 def step_impl(context, atomic_cmd, host):
