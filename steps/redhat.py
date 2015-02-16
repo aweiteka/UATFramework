@@ -58,3 +58,10 @@ def step_impl(context, total, host):
     for i in r:
         assert int(total) == i['stdout'].count('Serial')
 
+@then(u'subscription status is unknown on "{host}"')
+def step_impl(context, host):
+    r = context.remote_cmd("command",
+                           host,
+                           module_args="subscription-manager status")
+    for i in r:
+        assert 'Status: Unknown' in i['stdout']
