@@ -148,7 +148,7 @@ def before_all(context):
         else:
             values = []
             for key, value in context.result['contacted'].iteritems():
-                if "failed" in value:
+                if 'rc' in value.keys() and value['rc'] != 0:
                     return False
                 else:
                     values.append(value)
