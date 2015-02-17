@@ -23,8 +23,7 @@ def step_impl(context, version, host):
                            r' {5}(?P<osname>[\w\-]+)'
                            r' {5}(?P<refspec>[\w:\-/]+)')
 
-    # remote_cmd returns a list, so iterate through the list looking for the
-    # particular version string
+    # parsing the output for the version number
     active_version = None
     if version_result:
         for item in version_result:
@@ -84,3 +83,4 @@ def step_impl(context, remote_file, local_dir):
                                       module_args='src=%s dest=%s flat=yes' % (remote_file, local_dir))
 
     assert fetch_result
+
