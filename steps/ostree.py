@@ -84,3 +84,6 @@ def step_impl(context, remote_file, local_dir):
 
     assert fetch_result
 
+@then(u'the error message should indicate the system is unregistered')
+def step_impl(context):
+    assert False
