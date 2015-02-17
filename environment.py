@@ -151,7 +151,7 @@ def before_all(context):
         else:
             values = []
             for key, value in context.result['contacted'].iteritems():
-                if ignore_rc=False and 'rc' in value.keys() and value['rc'] != 0:
+                if ignore_rc is False and 'rc' in value.keys() and value['rc'] != 0:
                     return False
                 else:
                     values.append(value)
