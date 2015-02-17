@@ -98,3 +98,6 @@ tramp
 
 # cask packages
 .cask/
+
+# config examples
+config/examples
