@@ -62,6 +62,7 @@ def step_impl(context, total, host):
 def step_impl(context, host):
     r = context.remote_cmd("command",
                            host,
+                           ignore_rc=True
                            module_args="subscription-manager status")
     for i in r:
         assert 'Status: Unknown' in i['stdout']
