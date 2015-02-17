@@ -92,12 +92,15 @@ def before_all(context):
 
     context.api = api
 
-    def remote_cmd(cmd, host=None, sudo=None, **kwargs):
+    def remote_cmd(cmd, host=None, sudo=None, ignore_rc=False, **kwargs):
         '''Interface to run a command on a remote host using Ansible modules
 
         host: name of host of remote target system in ansible inventory file
               or environment variable
         cmd: an Ansible module
+        sudo: control if the command should use sudo
+        ignore_rc: occasionally the command is expected to fail.  Set this to
+                   True so that the output is retained and can be used
         module_args: module args in the form of "key1=value1 key2=value2"
         Returns list of values if all hosts successful, otherwise False'''
 
@@ -148,7 +151,7 @@ def before_all(context):
         else:
             values = []
             for key, value in context.result['contacted'].iteritems():
-                if 'rc' in value.keys() and value['rc'] != 0:
+                if ignore_rc=False and 'rc' in value.keys() and value['rc'] != 0:
                     return False
                 else:
                     values.append(value)
