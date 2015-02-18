@@ -10,12 +10,12 @@ Background: Atomic hosts are discovered
        Then atomic host upgrade should return an unregistered error
         and active tree version is at "7.1.0" on "all"
 
-  Scenario: 1. Host provisioned and subscribed
+  Scenario: Y. Host provisioned and subscribed
       Given "all" host
        When "all" host is auto-subscribed to "stage"
        Then subscription status is ok on "all"
         and "1" entitlement is consumed on "all"
 
-  Scenario: 2. Unregister
+  Scenario: Z. Unregister
        Then "all" host is unsubscribed and unregistered
         and subscription status is unknown on "all"
