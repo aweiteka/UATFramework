@@ -133,3 +133,18 @@ def step_impl(context):
 
     for r in rollback_result:
         assert expected_err in r['stderr']
+
+
+@then(u'atomic host upgrade reports no upgrade available')
+def step_impl(context):
+    expected_msg = "No upgrade available."
+
+    upgrade_result = context.remote_cmd(cmd='command',
+                                        sudo=True,
+                                        module_args='atomic host upgrade')
+
+    assert upgrade_result
+
+    for r in upgrade_result:
+        assert expected_msg in r['stdout']
+        
