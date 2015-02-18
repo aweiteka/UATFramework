@@ -32,7 +32,7 @@ def step_impl(context, version, host):
                 if m:
                     active_version = m.group('version')
 
-    assert active_version is not None
+    assert active_version == version
 
 @when(u'atomic "{atomic_cmd}" is run on "{host}"')
 def step_impl(context, atomic_cmd, host):
@@ -95,5 +95,4 @@ def step_impl(context):
                                         module_args='atomic host upgrade')
 
     for r in upgrade_result:
-        # print ">>> DEBUG: " + str(r) + "<<<"
         assert expected_err in r['stderr']
