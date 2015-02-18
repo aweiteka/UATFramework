@@ -10,6 +10,12 @@ Background: Atomic hosts are discovered
        Then atomic host upgrade should return an unregistered error
         and active tree version is at "7.1.0" on "all"
 
+  Scenario: 1. Host unprovisioned and 'atomic host rollback' is used
+      Given "all" host
+        and there is "1" atomic host tree deployment
+       Then atomic host rollback should return a deployment error
+        and there is "1" atomic host tree deployment
+
   Scenario: Y. Host provisioned and subscribed
       Given "all" host
        When "all" host is auto-subscribed to "stage"
