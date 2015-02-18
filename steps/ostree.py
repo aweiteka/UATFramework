@@ -84,6 +84,16 @@ def step_impl(context, remote_file, local_dir):
 
     assert fetch_result
 
-@then(u'the error message should indicate the system is unregistered')
+@then(u'atomic host upgrade should return an unregistered error')
 def step_impl(context):
-    assert False
+    expected_err = ("error: origin unconfigured-state: This system is not " +
+                    "registered to Red Hat Subscription Management. You " +
+                    "can use subscription-manager to register.")
+
+    upgrade_result = context.remote_cmd(cmd='command',
+                                        ignore_rc=True,
+                                        module_args='atomic host upgrade')
+
+    for r in upgrade_result:
+        # print ">>> DEBUG: " + str(r) + "<<<"
+        assert expected_err in r['stderr']
