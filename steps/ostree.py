@@ -25,12 +25,11 @@ def step_impl(context, version, host):
 
     # parsing the output for the version number
     active_version = None
-    if version_result:
-        for item in version_result:
-            for l in item['stdout'].split('\n'):
-                m = status_re.search(l)
-                if m:
-                    active_version = m.group('version')
+    for item in version_result:
+        for l in item['stdout'].split('\n'):
+            m = status_re.search(l)
+            if m:
+                active_version = m.group('version')
 
     assert active_version == version
 
