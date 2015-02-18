@@ -4,6 +4,7 @@ import re
 import time
 from behave import *
 
+
 @given(u'active tree version is at "{version}" on "{host}"')
 @then(u'active tree version is at "{version}" on "{host}"')
 def step_impl(context, version, host):
@@ -33,6 +34,7 @@ def step_impl(context, version, host):
 
     assert active_version == version
 
+
 @when(u'atomic "{atomic_cmd}" is run on "{host}"')
 def step_impl(context, atomic_cmd, host):
     '''Run atomic command'''
@@ -42,30 +44,36 @@ def step_impl(context, atomic_cmd, host):
 
     assert atomic_result
 
+
 @then(u'wait "{seconds}" seconds for "{host}" to reboot')
 def step_impl(context, seconds, host):
     '''Reboot a host and wait a specified time for it to come back'''
     # Arguably, this step can probably be done more elegantly, but right now
     # this works just fine.
     reboot_result = context.remote_cmd(cmd='command',
-                                       host=host, 
+                                       host=host,
                                        module_args='systemctl reboot',
-                                       module_vars={'async': 0, 'poll': 0, 'ignore_errors': True})
+                                       module_vars={'async': 0,
+                                                    'poll': 0,
+                                                    'ignore_errors': True})
 
     time.sleep(float(seconds))
-    ping_result = context.remote_cmd(cmd='ping', 
+    ping_result = context.remote_cmd(cmd='ping',
                                      host=host,
                                      sudo=False)
     assert ping_result
+
 
 @when(u'"{src_file}" is copied to "{dest_file}"')
 def step_imp(context, src_file, dest_file):
     # Copy a file to a destination file on a remote host
     # Currently defaults to 0744 for permissions
     copy_result = context.remote_cmd(cmd='copy',
-                                     module_args='src=%s dest=%s mode=0744' % (src_file, dest_file))
+                                     module_args='src=%s dest=%s mode=0744' %
+                                                 (src_file, dest_file))
 
     assert copy_result
+
 
 @when(u'"{script}" is executed')
 def step_impl(context, script):
@@ -75,13 +83,16 @@ def step_impl(context, script):
 
     assert exec_result
 
+
 @then(u'"{remote_file}" is fetched to "{local_dir}"')
 def step_impl(context, remote_file, local_dir):
     # Retrieve a remote file to a local directory
     fetch_result = context.remote_cmd(cmd='fetch',
-                                      module_args='src=%s dest=%s flat=yes' % (remote_file, local_dir))
+                                      module_args='src=%s dest=%s flat=yes' %
+                                                  (remote_file, local_dir))
 
     assert fetch_result
+
 
 @then(u'atomic host upgrade should return an unregistered error')
 def step_impl(context):
