@@ -102,7 +102,34 @@ def step_impl(context):
 
     upgrade_result = context.remote_cmd(cmd='command',
                                         ignore_rc=True,
+                                        sudo=True,
                                         module_args='atomic host upgrade')
 
     for r in upgrade_result:
+        assert expected_err in r['stderr']
+
+
+@given(u'there is "{num}" atomic host tree deployment')
+@then(u'there is "{num}" atomic host tree deployment')
+def step_impl(context, num):
+    status_result = context.remote_cmd(cmd='command',
+                                       module_args='atomic host status')
+
+    assert status_result
+
+    for r in status_result:
+        assert len(r['stdout'].split('\n')) == int(num) + 1
+
+
+@then(u'atomic host rollback should return a deployment error')
+def step_impl(context):
+    expected_err = ("error: Found 1 deployments, at least 2 required " +
+                    "for rollback")
+
+    rollback_result = context.remote_cmd(cmd='command',
+                                         ignore_rc=True,
+                                         sudo=True,
+                                         module_args='atomic host rollback')
+
+    for r in rollback_result:
         assert expected_err in r['stderr']
