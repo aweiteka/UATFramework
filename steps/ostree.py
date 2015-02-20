@@ -147,4 +147,3 @@ def step_impl(context):
 
     for r in upgrade_result:
         assert expected_msg in r['stdout']
-        
