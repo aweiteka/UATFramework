@@ -101,3 +101,6 @@ tramp
 
 # config examples
 config/examples
+
+# PyCharm files
+.idea
