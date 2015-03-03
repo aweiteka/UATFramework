@@ -4,6 +4,7 @@ import re
 import time
 from behave import *
 
+
 def get_atomic_version(context):
     version_result = context.remote_cmd(cmd='command',
                                         sudo=False,
@@ -27,6 +28,7 @@ def get_atomic_version(context):
 
     return atomic_version
 
+
 @given(u'active tree version is at "{version}" on "{host}"')
 @then(u'active tree version is at "{version}" on "{host}"')
 def step_impl(context, version, host):
@@ -35,7 +37,7 @@ def step_impl(context, version, host):
     atomic_version = get_atomic_version(context)
     assert atomic_version == version, \
         ("The current atomic version %s does not match the expected " +
-        "version %s" % (atomic_version, version))
+         "version %s" % (atomic_version, version))
 
 
 @when(u'atomic "{atomic_cmd}" is run on "{host}"')
@@ -45,7 +47,7 @@ def step_impl(context, atomic_cmd, host):
                                        host=host,
                                        module_args='atomic %s' % atomic_cmd)
 
-    assert atomic_result, "Error running 'atomic %s'" % atomic_cmd=
+    assert atomic_result, "Error running 'atomic %s'" % atomic_cmd
 
 
 @then(u'wait "{seconds}" seconds for "{host}" to reboot')
@@ -144,7 +146,7 @@ def step_impl(context):
     for r in rollback_result:
         assert expected_err in r['stderr'], \
             ("Did not receive the expected error when running " +
-            "'atomic host rollback")
+             "'atomic host rollback")
 
 
 @then(u'atomic host upgrade reports no upgrade available')
@@ -162,11 +164,13 @@ def step_impl(context):
             ("Did not receive the expected error when running " +
              "'atomic host upgrade'")
 
+
 @given(u'the original atomic version has been recorded')
 def step_impl(context):
     context.original_version = get_atomic_version(context)
     assert context.original_version is not None, \
         "Unable to record the current atomic version"
+
 
 @then(u'current atomic version should match the original atomic version')
 def step_impl(context):
@@ -174,4 +178,3 @@ def step_impl(context):
     assert current_version == context.original_version, \
         ("The current atomic version %s did not match the original atomic " +
          "version %s" % (current_version, context.original_version))
-    
