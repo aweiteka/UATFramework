@@ -46,6 +46,8 @@ def step_impl(context, host):
     r = context.remote_cmd("command",
                            host,
                            module_args="subscription-manager status")
+    assert r
+
     for i in r:
         assert 'Status: Current' in i['stdout']
 
@@ -55,6 +57,8 @@ def step_impl(context, total, host):
     r = context.remote_cmd("command",
                            host,
                            module_args='subscription-manager list --consumed')
+    assert r
+
     for i in r:
         assert int(total) == i['stdout'].count('Serial')
 
@@ -64,5 +68,7 @@ def step_impl(context, host):
                            host,
                            ignore_rc=True,
                            module_args="subscription-manager status")
+    assert r
+    
     for i in r:
         assert 'Status: Unknown' in i['stdout']
