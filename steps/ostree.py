@@ -9,7 +9,7 @@ def get_atomic_version(context):
                                         sudo=False,
                                         module_args='atomic host status')
 
-    assert version_result
+    assert version_result, "Error running 'atomic host status'"
 
     status_re = re.compile(r'^\* '
                            r'(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
@@ -31,31 +31,11 @@ def get_atomic_version(context):
 @then(u'active tree version is at "{version}" on "{host}"')
 def step_impl(context, version, host):
     '''Get the active version of the tree installed'''
-    # version_result = context.remote_cmd(cmd='command',
-    #                                     host=host,
-    #                                     sudo=False,
-    #                                     module_args='atomic host status')
-    #
-    # assert version_result
-
-    # gnarly regex to search through the active version line
-    # status_re = re.compile(r'^\* '
-    #                        r'(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
-    #                        r' {5}(?P<version>\d+.\d+.\d+)'
-    #                        r' {5}(?P<id>\w{10})'
-    #                        r' {5}(?P<osname>[\w\-]+)'
-    #                        r' {5}(?P<refspec>[\w:\-/]+)')
-
-    # parsing the output for the version number
-    # active_version = None
-    # for item in version_result:
-    #     for l in item['stdout'].split('\n'):
-    #         m = status_re.search(l)
-    #         if m:
-    #             active_version = m.group('version')
 
     atomic_version = get_atomic_version(context)
-    assert atomic_version == version
+    assert atomic_version == version, \
+        ("The current atomic version %s does not match the expected " +
+        "version %s" % (atomic_version, version))
 
 
 @when(u'atomic "{atomic_cmd}" is run on "{host}"')
@@ -65,7 +45,7 @@ def step_impl(context, atomic_cmd, host):
                                        host=host,
                                        module_args='atomic %s' % atomic_cmd)
 
-    assert atomic_result
+    assert atomic_result, "Error running 'atomic %s'" % atomic_cmd=
 
 
 @then(u'wait "{seconds}" seconds for "{host}" to reboot')
@@ -84,7 +64,7 @@ def step_impl(context, seconds, host):
     ping_result = context.remote_cmd(cmd='ping',
                                      host=host,
                                      sudo=False)
-    assert ping_result
+    assert ping_result, "Unable to ping host after reboot"
 
 
 @when(u'"{src_file}" is copied to "{dest_file}"')
@@ -95,7 +75,9 @@ def step_imp(context, src_file, dest_file):
                                      module_args='src=%s dest=%s mode=0744' %
                                                  (src_file, dest_file))
 
-    assert copy_result
+    assert copy_result, \
+        ("Error copying local file %s to remote destination %s" %
+         (src_file, dest_file))
 
 
 @when(u'"{script}" is executed')
@@ -104,7 +86,7 @@ def step_impl(context, script):
     exec_result = context.remote_cmd(cmd='command',
                                      module_args=script)
 
-    assert exec_result
+    assert exec_result, "Error executing script named %s" % script
 
 
 @then(u'"{remote_file}" is fetched to "{local_dir}"')
@@ -114,7 +96,9 @@ def step_impl(context, remote_file, local_dir):
                                       module_args='src=%s dest=%s flat=yes' %
                                                   (remote_file, local_dir))
 
-    assert fetch_result
+    assert fetch_result, \
+        ("Error fetching remote file %s to local directory %s" %
+         (remote_file, local_dir))
 
 
 @then(u'atomic host upgrade should return an unregistered error')
@@ -129,7 +113,9 @@ def step_impl(context):
                                         module_args='atomic host upgrade')
 
     for r in upgrade_result:
-        assert expected_err in r['stderr']
+        assert expected_err in r['stderr'], \
+            ("Did not receive the expected error when running " +
+             "'atomic host upgrade'")
 
 
 @given(u'there is "{num}" atomic host tree deployment')
@@ -138,10 +124,11 @@ def step_impl(context, num):
     status_result = context.remote_cmd(cmd='command',
                                        module_args='atomic host status')
 
-    assert status_result
+    assert status_result, "Error running 'atomic host status'"
 
     for r in status_result:
-        assert len(r['stdout'].split('\n')) == int(num) + 1
+        assert len(r['stdout'].split('\n')) == int(num) + 1, \
+            "Did not find the expected number of deplpoyments (%s)" % num
 
 
 @then(u'atomic host rollback should return a deployment error')
@@ -155,7 +142,9 @@ def step_impl(context):
                                          module_args='atomic host rollback')
 
     for r in rollback_result:
-        assert expected_err in r['stderr']
+        assert expected_err in r['stderr'], \
+            ("Did not receive the expected error when running " +
+            "'atomic host rollback")
 
 
 @then(u'atomic host upgrade reports no upgrade available')
@@ -166,27 +155,22 @@ def step_impl(context):
                                         sudo=True,
                                         module_args='atomic host upgrade')
 
-    assert upgrade_result
+    assert upgrade_result, "Error while running 'atomic host upgrade'"
 
     for r in upgrade_result:
-        assert expected_msg in r['stdout']
+        assert expected_msg in r['stdout'], \
+            ("Did not receive the expected error when running " +
+             "'atomic host upgrade'")
 
 @given(u'the original atomic version has been recorded')
 def step_impl(context):
-    # version_result = context.remote_cmd(cmd='command',
-    #                                     host=host,
-    #                                     sudo=False,
-    #                                     module_args='atomic host status')
-
     context.original_version = get_atomic_version(context)
-    assert context.original_version is not None
+    assert context.original_version is not None, \
+        "Unable to record the current atomic version"
 
 @then(u'current atomic version should match the original atomic version')
 def step_impl(context):
-    # version_result = context.remote_cmd(cmd='command',
-    #                                     host=host,
-    #                                     sudo=False,
-    #                                     module_args='atomic host status')
-
     current_version = get_atomic_version(context)
-    assert current_version == context.original_version
+    assert current_version == context.original_version, \
+        ("The current atomic version %s did not match the original atomic " +
+         "version %s" % (current_version, context.original_version))
