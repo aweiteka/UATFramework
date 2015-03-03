@@ -174,3 +174,4 @@ def step_impl(context):
     assert current_version == context.original_version, \
         ("The current atomic version %s did not match the original atomic " +
          "version %s" % (current_version, context.original_version))
+    
