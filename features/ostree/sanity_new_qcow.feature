@@ -7,9 +7,9 @@ Background: Atomic hosts are discovered
         and "all" host
 
   Scenario: 1. Host unprovisioned and 'atomic host upgrade' is used
-      Given active tree version is at "7.1.0" on "all"
+      Given the original atomic version has been recorded
        Then atomic host upgrade should return an unregistered error
-        and active tree version is at "7.1.0" on "all"
+        and current atomic version should match the original atomic version
 
   Scenario: 2. Host unprovisioned and 'atomic host rollback' is used
       Given there is "1" atomic host tree deployment

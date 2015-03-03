@@ -4,19 +4,13 @@ import re
 import time
 from behave import *
 
-
-@given(u'active tree version is at "{version}" on "{host}"')
-@then(u'active tree version is at "{version}" on "{host}"')
-def step_impl(context, version, host):
-    '''Get the active version of the tree installed'''
+def get_atomic_version(context):
     version_result = context.remote_cmd(cmd='command',
-                                        host=host,
                                         sudo=False,
                                         module_args='atomic host status')
 
     assert version_result
 
-    # gnarly regex to search through the active version line
     status_re = re.compile(r'^\* '
                            r'(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
                            r' {5}(?P<version>\d+.\d+.\d+)'
@@ -24,15 +18,44 @@ def step_impl(context, version, host):
                            r' {5}(?P<osname>[\w\-]+)'
                            r' {5}(?P<refspec>[\w:\-/]+)')
 
-    # parsing the output for the version number
-    active_version = None
+    atomic_version = None
     for item in version_result:
         for l in item['stdout'].split('\n'):
             m = status_re.search(l)
             if m:
-                active_version = m.group('version')
+                atomic_version = m.group('version')
 
-    assert active_version == version
+    return atomic_version
+
+@given(u'active tree version is at "{version}" on "{host}"')
+@then(u'active tree version is at "{version}" on "{host}"')
+def step_impl(context, version, host):
+    '''Get the active version of the tree installed'''
+    # version_result = context.remote_cmd(cmd='command',
+    #                                     host=host,
+    #                                     sudo=False,
+    #                                     module_args='atomic host status')
+    #
+    # assert version_result
+
+    # gnarly regex to search through the active version line
+    # status_re = re.compile(r'^\* '
+    #                        r'(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
+    #                        r' {5}(?P<version>\d+.\d+.\d+)'
+    #                        r' {5}(?P<id>\w{10})'
+    #                        r' {5}(?P<osname>[\w\-]+)'
+    #                        r' {5}(?P<refspec>[\w:\-/]+)')
+
+    # parsing the output for the version number
+    # active_version = None
+    # for item in version_result:
+    #     for l in item['stdout'].split('\n'):
+    #         m = status_re.search(l)
+    #         if m:
+    #             active_version = m.group('version')
+
+    atomic_version = get_atomic_version(context)
+    assert atomic_version == version
 
 
 @when(u'atomic "{atomic_cmd}" is run on "{host}"')
@@ -147,3 +170,23 @@ def step_impl(context):
 
     for r in upgrade_result:
         assert expected_msg in r['stdout']
+
+@given(u'the original atomic version has been recorded')
+def step_impl(context):
+    # version_result = context.remote_cmd(cmd='command',
+    #                                     host=host,
+    #                                     sudo=False,
+    #                                     module_args='atomic host status')
+
+    context.original_version = get_atomic_version(context)
+    assert context.original_version is not None
+
+@then(u'current atomic version should match the original atomic version')
+def step_impl(context):
+    # version_result = context.remote_cmd(cmd='command',
+    #                                     host=host,
+    #                                     sudo=False,
+    #                                     module_args='atomic host status')
+
+    current_version = get_atomic_version(context)
+    assert current_version == context.original_version
