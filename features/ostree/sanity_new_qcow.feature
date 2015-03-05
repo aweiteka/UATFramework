@@ -12,9 +12,9 @@ Background: Atomic hosts are discovered
         and current atomic version should match the original atomic version
 
   Scenario: 2. Host unprovisioned and 'atomic host rollback' is used
-      Given there is "1" atomic host tree deployment
+      Given there is "1" atomic host tree deployed
        Then atomic host rollback should return a deployment error
-        and there is "1" atomic host tree deployment
+        and there is "1" atomic host tree deployed
 
   Scenario: 3. Host provisioned and subscribed
        When "all" host is auto-subscribed to "stage"
@@ -22,14 +22,14 @@ Background: Atomic hosts are discovered
         and "1" entitlement is consumed on "all"
 
   Scenario: 4. 'atomic host upgrade' is successful when no upgrade available
-      Given there is "1" atomic host tree deployment
+      Given there is "1" atomic host tree deployed
        Then atomic host upgrade reports no upgrade available
-        and there is "1" atomic host tree deployment
+        and there is "1" atomic host tree deployed
 
   Scenario: 5. 'atomic host rollback' reports error about single deployment
-      Given there is "1" atomic host tree deployment
+      Given there is "1" atomic host tree deployed
        Then atomic host rollback should return a deployment error
-        and there is "1" atomic host tree deployment
+        and there is "1" atomic host tree deployed
 
   Scenario: 6. Unregister
        Then "all" host is unsubscribed and unregistered
