@@ -2,7 +2,7 @@ Feature: Atomic host sanity test for new upgrade tree
     Describes tests for upgrade/rollback to/from new ostree
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from static inventory
+      Given "all" hosts from dynamic inventory
         and "all" host
 
   Scenario: 3. Host provisioned and subscribed
