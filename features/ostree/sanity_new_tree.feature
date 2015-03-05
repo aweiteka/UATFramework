@@ -1,6 +1,5 @@
-Feature: Atomic host sanity test for new QCOW images
-    Describes the basic 'atomic host' command functionality for a fresh
-    QCOW image install.
+Feature: Atomic host sanity test for new upgrade tree
+    Describes tests for upgrade/rollback to/from new ostree
 
 Background: Atomic hosts are discovered
       Given "all" hosts from static inventory
@@ -17,10 +16,17 @@ Background: Atomic hosts are discovered
        Then there is "2" atomic host tree deployed
 
   Scenario: 5. Reboot into the new deployment
-     Given: there is "2" atomic host tree deployed
+      Given there is "2" atomic host tree deployed
         and the original atomic version has been recorded
-      Then: wait "20" seconds for "all" to reboot
+       When wait "20" seconds for "all" to reboot
+       Then the current atomic version should not match the original atomic version
 
+  Scenario: 6. Rollback to the original deployment
+      Given there is "2" atomic host tree deployed
+        and the original atomic version has been recorded
+       When atomic host rollback is successful
+        and wait "20" seconds for "all" to reboot
+       Then the current atomic version should not match the original atomic version
 
   Scenario: 6. Unregister
        Then "all" host is unsubscribed and unregistered
