@@ -15,7 +15,7 @@ def get_atomic_version(context):
     status_re = re.compile(r'^\* '
                            r'(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
                            r' {5}(?P<version>\d+.\d+.\d+)'
-                           r' {5}(?P<id>\w{10})'
+                           r' +(?P<id>\w{10})'
                            r' {5}(?P<osname>[\w\-]+)'
                            r' {5}(?P<refspec>[\w:\-/]+)')
 
@@ -51,6 +51,7 @@ def step_impl(context, atomic_cmd, host):
 
 
 @then(u'wait "{seconds}" seconds for "{host}" to reboot')
+@when(u'wait "{seconds}" seconds for "{host}" to reboot')
 def step_impl(context, seconds, host):
     '''Reboot a host and wait a specified time for it to come back'''
     # Arguably, this step can probably be done more elegantly, but right now
@@ -120,8 +121,8 @@ def step_impl(context):
              "'atomic host upgrade'")
 
 
-@given(u'there is "{num}" atomic host tree deployment')
-@then(u'there is "{num}" atomic host tree deployment')
+@given(u'there is "{num}" atomic host tree deployed')
+@then(u'there is "{num}" atomic host tree deployed')
 def step_impl(context, num):
     status_result = context.remote_cmd(cmd='command',
                                        module_args='atomic host status')
@@ -130,7 +131,7 @@ def step_impl(context, num):
 
     for r in status_result:
         assert len(r['stdout'].split('\n')) == int(num) + 1, \
-            "Did not find the expected number of deplpoyments (%s)" % num
+            "Did not find the expected number of deployments (%s)" % num
 
 
 @then(u'atomic host rollback should return a deployment error')
@@ -175,6 +176,36 @@ def step_impl(context):
 @then(u'current atomic version should match the original atomic version')
 def step_impl(context):
     current_version = get_atomic_version(context)
+    assert current_version is not None, \
+        "Unable to retrieve the current atomic version"
     assert current_version == context.original_version, \
         ("The current atomic version %s did not match the original atomic " +
          "version %s" % (current_version, context.original_version))
+
+
+@when(u'atomic host upgrade is successful')
+def step_impl(context):
+    upgrade_result = context.remote_cmd(cmd='command',
+                                        sudo=True,
+                                        module_args='atomic host upgrade')
+
+    assert upgrade_result, "Error performing 'atomic host upgrade"
+
+
+@then(u'the current atomic version should not match the original atomic version')
+def step_impl(context):
+    current_version = get_atomic_version(context)
+    assert current_version is not None, \
+        "Unable to retrieve the current atomic version"
+    assert current_version != context.original_version, \
+        ("The current atomic version %s did not match the original atomic " +
+         "version %s" % (current_version, context.original_version))
+
+
+@when(u'atomic host rollback is successful')
+def step_impl(context):
+    rollback_result = context.remote_cmd(cmd='command',
+                                         sudo=True,
+                                         module_args='atomic host rollback')
+
+    assert rollback_result, "Error while running 'atomic host rollback'"
