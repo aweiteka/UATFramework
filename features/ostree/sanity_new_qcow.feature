@@ -6,10 +6,16 @@ Background: Atomic hosts are discovered
       Given "all" hosts from dynamic inventory
         and "all" host
 
+  Scenario: 0. Collect the data about the system
+      Given the data collection script is present
+       When the data collection script is run
+       Then the data collection output file is present
+        and the data collection output files are retrieved
+
   Scenario: 1. Host unprovisioned and 'atomic host upgrade' is used
       Given the original atomic version has been recorded
        Then atomic host upgrade should return an unregistered error
-        and current atomic version should match the original atomic version
+        and the current atomic version should match the original atomic version
 
   Scenario: 2. Host unprovisioned and 'atomic host rollback' is used
       Given there is "1" atomic host tree deployed
