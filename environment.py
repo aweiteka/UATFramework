@@ -1,4 +1,5 @@
 '''Magically loaded by behave defining helper methods and other things'''
+from __future__ import print_function
 
 # define the necessary logging features to write messages to a file
 import logging
@@ -79,7 +80,7 @@ def before_all(context):
                          headers=post_headers,
                          data=payload)
         if result.raise_for_status():
-            print 'Status %s: %s' % (result.status_code, result.json()['error'])
+            print('Status %s: %s' % (result.status_code, result.json()['error']))
             return False
         if app is "satellite":
             if payload is None and method is None:
@@ -87,7 +88,7 @@ def before_all(context):
             else:
                 return result.json()
         elif app is "openshiftv2":
-            print result.json()
+            print(result.json())
             return result.json()
 
     context.api = api
@@ -143,10 +144,10 @@ def before_all(context):
 
         # TODO support lists of hosts
         if context.result['dark']:
-            print context.result['dark']
+            print(context.result['dark'])
             return False
         elif not context.result['contacted']:
-            print context.result
+            print(context.result)
             return False
         else:
             values = []
