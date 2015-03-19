@@ -30,9 +30,15 @@ hosts = { 'cihosts': {
 
 for host in json_data['resources']:
     if host:
-        hosts['cihosts']['hosts'].append(host['ip'])
-        # may need to add user-defined vars here as well. Example:
-        #hosts['cihosts']['vars'] = { 'ansible_ssh_user': 'cloud-user'}
-        hosts[host['name']] = [host['ip']]
+        # Openstack resources
+        if 'ip' in host:
+            # may need to add user-defined vars here as well. Example:
+            #hosts['cihosts']['vars'] = { 'ansible_ssh_user': 'cloud-user'}
+            hosts['cihosts']['hosts'].append(host['ip'])
+            hosts[host['name']] = [host['ip']]
+        # Beaker resources
+        if 'system' in host:
+            hosts['cihosts']['hosts'].append(host['system'])
+            hosts[host['system']] = [host['system']]
 
 print json.dumps(hosts)
