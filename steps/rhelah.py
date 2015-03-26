@@ -1,5 +1,6 @@
 '''ostree test methods'''
 
+import os
 import re
 import time
 from behave import *
@@ -83,7 +84,7 @@ def step_imp(context, src_file, dest_file):
          (src_file, dest_file))
 
 
-@when(u'"{script}" is executed')
+@when(u'the script named "{script}" is executed')
 def step_impl(context, script):
     # Execute a script (any file really) on the remote host
     exec_result = context.remote_cmd(cmd='command',
@@ -173,7 +174,7 @@ def step_impl(context):
         "Unable to record the current atomic version"
 
 
-@then(u'current atomic version should match the original atomic version')
+@then(u'the current atomic version should match the original atomic version')
 def step_impl(context):
     current_version = get_atomic_version(context)
     assert current_version is not None, \
@@ -209,3 +210,42 @@ def step_impl(context):
                                          module_args='atomic host rollback')
 
     assert rollback_result, "Error while running 'atomic host rollback'"
+
+
+@given(u'the data collection script is present')
+def step_impl(context):
+    stat_result = context.remote_cmd(cmd='stat',
+                                     module_args='path=/usr/local/bin/atomic_smoketest.sh')
+
+    assert stat_result, "The data collection script is missing"
+
+
+@when(u'the data collection script is run')
+def step_impl(context):
+    run_result = context.remote_cmd(cmd='command',
+                                    sudo=True,
+                                    module_args='/usr/local/bin/atomic_smoketest.sh')
+
+    assert run_result, "Error while running data collection script"
+
+
+@then(u'the data collection output file is present')
+def step_impl(context):
+    stat_result = context.remote_cmd(cmd='stat',
+                                     module_args='/var/qe/atomic_smoke_output.txt')
+
+    assert stat_result, "The data collection output file is missing"
+
+
+@then(u'the data collection output files are retrieved')
+def step_impl(context):
+    jenkins_ws = os.getenv('WORKSPACE')
+    fetch_result = context.remote_cmd(cmd='fetch',
+                                      module_args='src=/var/qe/atomic_smoke_output.txt dest=%s/ flat=yes' % jenkins_ws)
+
+    assert fetch_result, "Error retrieving the data collection output file"
+
+    fetch_result = context.remote_cmd(cmd='fetch',
+                                      module_args='src=/var/qe/atomic_smoke_failed dest=%s/ flat=yes' % jenkins_ws)
+
+    assert fetch_result, "Error retrieving the data collection failure file"
