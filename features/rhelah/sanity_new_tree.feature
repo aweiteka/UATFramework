@@ -6,7 +6,7 @@ Background: Atomic hosts are discovered
         and "all" host
 
   Scenario: 1. Host provisioned and subscribed
-       When "all" host is auto-subscribed
+       When "all" host is auto-subscribed to "stage"
        Then subscription status is ok on "all"
         and "1" entitlement is consumed on "all"
 
