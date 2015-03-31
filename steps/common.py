@@ -76,6 +76,7 @@ def step_impl(context, unit, host):
     else:
         assert False
 
+@given(u'"{host}" hosts can be pinged')
 @given('"{host}" host')
 def step(context, host):
     '''Verify we can ping the host
