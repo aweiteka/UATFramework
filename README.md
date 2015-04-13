@@ -51,6 +51,8 @@ Automation needs to be *really simple* to write and maintain. If you can write a
 ### Debugging
 By default debug print statements are captured with all stdout and stderr also. This makes debugging difficult. Pass argument `--no-capture` when running Behave to view debug statements. For stderr pass in `--no-capture-stderr`.
 
+Enable **debug mode** by setting environment variable: `BEHAVE_DEBUG_LOGGING="True"`
+
 Remote commands are executed via Ansible and SSH. For new commands try using ansible CLI then add them to a steps method.
 
 Static inventory:
