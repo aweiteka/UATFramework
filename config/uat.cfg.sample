@@ -1,6 +1,5 @@
 [ansible]
 inventory = config/ansible_inventory
-sudo = True
 dynamic_inventory_script = config/central_ci_dynamic_hosts.py
 
 [redhat-prod]

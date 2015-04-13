@@ -8,7 +8,6 @@ from behave import *
 
 def get_atomic_version(context):
     version_result = context.remote_cmd(cmd='command',
-                                        sudo=False,
                                         module_args='atomic host status')
 
     assert version_result, "Error running 'atomic host status'"
@@ -66,8 +65,7 @@ def step_impl(context, seconds, host):
 
     time.sleep(float(seconds))
     ping_result = context.remote_cmd(cmd='ping',
-                                     host=host,
-                                     sudo=False)
+                                     host=host)
     assert ping_result, "Unable to ping host after reboot"
 
 
@@ -113,7 +111,6 @@ def step_impl(context):
 
     upgrade_result = context.remote_cmd(cmd='command',
                                         ignore_rc=True,
-                                        sudo=True,
                                         module_args='atomic host upgrade')
 
     for r in upgrade_result:
@@ -142,7 +139,6 @@ def step_impl(context):
 
     rollback_result = context.remote_cmd(cmd='command',
                                          ignore_rc=True,
-                                         sudo=True,
                                          module_args='atomic host rollback')
 
     for r in rollback_result:
@@ -156,7 +152,6 @@ def step_impl(context):
     expected_msg = "No upgrade available."
 
     upgrade_result = context.remote_cmd(cmd='command',
-                                        sudo=True,
                                         module_args='atomic host upgrade')
 
     assert upgrade_result, "Error while running 'atomic host upgrade'"
@@ -187,7 +182,6 @@ def step_impl(context):
 @when(u'atomic host upgrade is successful')
 def step_impl(context):
     upgrade_result = context.remote_cmd(cmd='command',
-                                        sudo=True,
                                         module_args='atomic host upgrade')
 
     assert upgrade_result, "Error performing 'atomic host upgrade"
@@ -206,7 +200,6 @@ def step_impl(context):
 @when(u'atomic host rollback is successful')
 def step_impl(context):
     rollback_result = context.remote_cmd(cmd='command',
-                                         sudo=True,
                                          module_args='atomic host rollback')
 
     assert rollback_result, "Error while running 'atomic host rollback'"
@@ -223,7 +216,6 @@ def step_impl(context):
 @when(u'the data collection script is run')
 def step_impl(context):
     run_result = context.remote_cmd(cmd='command',
-                                    sudo=True,
                                     module_args='/usr/local/bin/atomic_smoketest.sh')
 
     assert run_result, "Error while running data collection script"

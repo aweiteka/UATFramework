@@ -93,13 +93,12 @@ def before_all(context):
 
     context.api = api
 
-    def remote_cmd(cmd, host=None, sudo=None, ignore_rc=False, **kwargs):
+    def remote_cmd(cmd, host=None, ignore_rc=False, **kwargs):
         '''Interface to run a command on a remote host using Ansible modules
 
         host: name of host of remote target system in ansible inventory file
               or environment variable
         cmd: an Ansible module
-        sudo: control if the command should use sudo
         ignore_rc: occasionally the command is expected to fail.  Set this to
                    True so that the output is retained and can be used
         module_args: module args in the form of "key1=value1 key2=value2"
@@ -116,12 +115,6 @@ def before_all(context):
             # default to static file
             inventory = ansible.inventory.Inventory(config.get('ansible', 'inventory'))
 
-        # the user can specify to not use 'sudo' per command or use the config file value
-        if sudo is not None:
-            sudo = sudo
-        else:
-            sudo = config.get('ansible', 'sudo')
-
         # check value of host. if host is not None, we assume the user has
         # supplied a host arg to remote_cmd(). otherwise, it is passed
         # along in the context object.
@@ -137,7 +130,6 @@ def before_all(context):
                  module_name=cmd,
                  inventory=inventory,
                  pattern=host,
-                 sudo=sudo,
                  #remote_user=remote_user,
                  **kwargs
         ).run()
