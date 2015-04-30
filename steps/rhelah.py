@@ -3,6 +3,7 @@
 import os
 import re
 import time
+import filecmp
 from behave import *
 
 
@@ -27,7 +28,6 @@ def get_atomic_version(context):
                 atomic_version = m.group('version')
 
     return atomic_version
-
 
 @given(u'active tree version is at "{version}" on "{host}"')
 @then(u'active tree version is at "{version}" on "{host}"')
@@ -168,7 +168,6 @@ def step_impl(context):
     assert context.original_version is not None, \
         "Unable to record the current atomic version"
 
-
 @then(u'the current atomic version should match the original atomic version')
 def step_impl(context):
     current_version = get_atomic_version(context)
@@ -178,6 +177,22 @@ def step_impl(context):
         ("The current atomic version %s did not match the original atomic " +
          "version %s" % (current_version, context.original_version))
 
+@given(u'machine-id on "{host}" is recorded')
+def step_impl(context,host):
+    context.machine_id = context.remote_cmd(cmd='command',
+					host=host,
+					module_args='cat /etc/machine-id')[0]['stdout']
+    assert context.machine_id is not None, \
+        "Unable to read /etc/machine-id"
+    fd = open('/tmp/' + host, 'w')
+    fd.write(context.machine_id)
+    fd.close()
+
+@then(u'check if the machine-id on "{host1}" and "{host2}" differ')
+def step_impl(context,host1,host2):
+	machine_ids_equal = filecmp.cmp('/tmp/' + host1, '/tmp/' + host2)
+	assert context.machine_id is True, \
+		"Test failed. /etc/machine-id are equal."
 
 @when(u'atomic host upgrade is successful')
 def step_impl(context):
