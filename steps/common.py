@@ -72,7 +72,7 @@ def step_impl(context, unit, host):
                            module_args='name=%s state=running enabled=yes' % unit)
     if r:
         for i in r:
-            assert i['changed'] is True
+            assert i['state'] == 'started' and i['enabled'] is True
     else:
         assert False
 
