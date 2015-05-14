@@ -21,7 +21,7 @@ def step_impl(context, rpm, host):
                            module_args='name=%s state=present' % rpm)
     if r:
         for i in r:
-            assert i['changed'] is False
+            assert i['msg'] == '' and i['results'] != []
     else:
         assert False
 
@@ -41,7 +41,7 @@ def step_impl(context, rpms, host):
                            module_args='name=%s' % rpms)
     if r:
         for i in r:
-            assert i['changed'] is False
+            assert i['msg'] == '' and i['results'] != []
     else:
         assert False
 
