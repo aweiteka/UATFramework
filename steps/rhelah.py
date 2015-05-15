@@ -29,6 +29,7 @@ def get_atomic_version(context):
 
     return atomic_version
 
+
 @given(u'active tree version is at "{version}" on "{host}"')
 @then(u'active tree version is at "{version}" on "{host}"')
 def step_impl(context, version, host):
@@ -36,8 +37,8 @@ def step_impl(context, version, host):
 
     atomic_version = get_atomic_version(context)
     assert atomic_version == version, \
-        ("The current atomic version %s does not match the expected " +
-         "version %s" % (atomic_version, version))
+        ("The current atomic version %s " % atomic_version +
+         "does not match the expected version %s" % version)
 
 
 @when(u'atomic "{atomic_cmd}" is run on "{host}"')
@@ -168,31 +169,36 @@ def step_impl(context):
     assert context.original_version is not None, \
         "Unable to record the current atomic version"
 
+
 @then(u'the current atomic version should match the original atomic version')
 def step_impl(context):
     current_version = get_atomic_version(context)
     assert current_version is not None, \
         "Unable to retrieve the current atomic version"
     assert current_version == context.original_version, \
-        ("The current atomic version %s did not match the original atomic " +
-         "version %s" % (current_version, context.original_version))
+        ("The current atomic version %s " + current_version +
+         "did not match the original atomic version " +
+         "%s" % context.original_version)
+
 
 @given(u'machine-id on "{host}" is recorded')
-def step_impl(context,host):
+def step_impl(context, host):
     context.machine_id = context.remote_cmd(cmd='command',
-					host=host,
-					module_args='cat /etc/machine-id')[0]['stdout']
+                                            host=host,
+                                            module_args='cat /etc/machine-id')[0]['stdout']
     assert context.machine_id is not None, \
         "Unable to read /etc/machine-id"
     fd = open('/tmp/' + host, 'w')
     fd.write(context.machine_id)
     fd.close()
 
+
 @then(u'check if the machine-id on "{host1}" and "{host2}" differ')
-def step_impl(context,host1,host2):
-	machine_ids_equal = filecmp.cmp('/tmp/' + host1, '/tmp/' + host2)
-	assert context.machine_id is True, \
-		"Test failed. /etc/machine-id are equal."
+def step_impl(context, host1, host2):
+    machine_ids_equal = filecmp.cmp('/tmp/' + host1, '/tmp/' + host2)
+    assert machine_ids_equal is True, \
+        "Test failed. /etc/machine-id are equal."
+
 
 @when(u'atomic host upgrade is successful')
 def step_impl(context):
@@ -208,8 +214,9 @@ def step_impl(context):
     assert current_version is not None, \
         "Unable to retrieve the current atomic version"
     assert current_version != context.original_version, \
-        ("The current atomic version %s did not match the original atomic " +
-         "version %s" % (current_version, context.original_version))
+        ("The current atomic version %s " % current_version +
+         "did not match the original atomic version " +
+         "%s" % context.original_version)
 
 
 @when(u'atomic host rollback is successful')
@@ -239,7 +246,7 @@ def step_impl(context):
 @then(u'the data collection output file is present')
 def step_impl(context):
     stat_result = context.remote_cmd(cmd='stat',
-                                     module_args='/var/qe/atomic_smoke_output.txt')
+                                     module_args='path=/var/qe/atomic_smoke_output.txt')
 
     assert stat_result, "The data collection output file is missing"
 
