@@ -263,3 +263,19 @@ def step_impl(context):
                                       module_args='src=/var/qe/atomic_smoke_failed dest=%s/ flat=yes' % jenkins_ws)
 
     assert fetch_result, "Error retrieving the data collection failure file"
+
+
+@given(u'the upgrade interrupt script is present')
+def step_impl(context):
+    stat_result = context.remote_cmd(cmd='stat',
+                                     module_args='path=/usr/local/bin/atomic_upgrade_interrupt.sh')
+
+    assert stat_result, "The atomic upgrade interrupt script is missing"
+
+
+@when(u'the upgrade interrupt script is run "{num}" times')
+def step_impl(context, num):
+    int_result = context.remote_cmd(cmd='command',
+                                    module_args='/usr/local/bin/atomic_upgrade_interrupt.sh %s' % num)
+
+    assert int_result, "Error while running atomic upgrade interrupt script"
