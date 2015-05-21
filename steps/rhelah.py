@@ -340,4 +340,10 @@ def step_impl(context):
 def step_impl(context):
 	register_result =  context.remote_cmd(cmd='shell',
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Pool | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
-	assert register_result == 'Pool 8a85f9823e3d5e43013e3ddd4e95ffff is not available', "Poll 8a85f9823e3d5e43013e3ddd4e95ffff shouldn't be available"
+	assert register_result == 'Pool 8a85f9823e3d5e43013e3ddd4e95ffff is not available', "Pool 8a85f9823e3d5e43013e3ddd4e95ffff shouldn't be available"
+
+@then(u'check if the subscription-manager failed to attach pool-id defined as a scalar')
+def step_impl(context):
+	register_result =  context.remote_cmd(cmd='shell',
+                    module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Pool | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
+	assert register_result == 'Pools must in the format of a list.', "Pools in scalar form shouldn't be accepted"
