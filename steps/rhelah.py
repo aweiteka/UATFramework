@@ -317,3 +317,15 @@ def step_impl(context):
 	repoids_enabled = context.remote_cmd(cmd='shell',
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep "Enabled the following repos" | cut -d ":" -f5 | sed "s/^ //"')[0]['stdout']
 	assert repoids_enabled == 'rhel-7-server-optional-beta-rpms, rhel-7-server-beta-debug-rpms', "Configured repoids weren't enabled"
+
+@then(u'check if it failed')
+def step_impl(context):
+	cloudinit_result = context.remote_cmd(cmd='shell',
+					module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | tail -n1 | cut -d ":" -f4 | sed "s/^ //"')[0]['stdout']
+	assert cloudinit_result == 'rh_subscription plugin did not complete successfully', 'rh_subscription plugin should have failed'
+
+@then(u'check if the subscription-manager failed to register with bad username')
+def step_impl(context):
+	register_result =  context.remote_cmd(cmd='shell',
+                    module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Invalid | cut -d ":" -f4 | sed -e "s/^ //" | tail -n1')[0]['stdout']
+	assert register_result == 'Invalid username or password. To create a login, please visit https', "subscription-manager didn't fail to register"
