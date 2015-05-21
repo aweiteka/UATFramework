@@ -329,3 +329,9 @@ def step_impl(context):
 	register_result =  context.remote_cmd(cmd='shell',
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Invalid | cut -d ":" -f4 | sed -e "s/^ //" | tail -n1')[0]['stdout']
 	assert register_result == 'Invalid username or password. To create a login, please visit https', "subscription-manager didn't fail to register"
+
+@then(u'check if the subscription-manager failed to register with bad password')
+def step_impl(context):
+	register_result =  context.remote_cmd(cmd='shell',
+                    module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Invalid | cut -d ":" -f4 | sed -e "s/^ //" | tail -n1')[0]['stdout']
+	assert register_result == 'Invalid username or password. To create a login, please visit https', "subscription-manager didn't fail to register"
