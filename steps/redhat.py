@@ -140,3 +140,9 @@ def step_impl(context):
 	register_result =  context.remote_cmd(cmd='shell',
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Pool | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
 	assert register_result == 'Pools must in the format of a list.', "Pools in scalar form shouldn't be accepted"
+
+@then(u'check if an error message is shown in the log when trying to add non-existent repo')
+def step_impl(context):
+	register_result =  context.remote_cmd(cmd='shell',
+                    module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Repo | grep exist | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
+	assert register_result == 'Repo rhel-7-server-beta-debug-rpm does not appear to exist', "Error message not found"
