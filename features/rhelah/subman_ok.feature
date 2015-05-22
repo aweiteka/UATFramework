@@ -16,7 +16,7 @@ Background: Atomic hosts are discovered
 
   Scenario: 2. subscription-manager plugin attaches existing pools
        Given cloud-init on "all" host is running
-       Then check if it successfully attached defined pools
+       Then check if it successfully attached existing pools
 
   Scenario: 3. subscription-manager plugin enables existing listed repoids
        Given cloud-init on "all" host is running
