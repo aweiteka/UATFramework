@@ -10,10 +10,10 @@ Background: Atomic hosts are discovered
        Then subscription status is ok on "all"
         and "1" entitlement is consumed on "all"
 
-  Scenario: 2. Start upgrade process and interrupt 10 times
+  Scenario: 2. Start upgrade process and interrupt 7 times
       Given the upgrade interrupt script is present
         and the original atomic version has been recorded
-       When the upgrade interrupt script is run "10" times
+       When the upgrade interrupt script is run "7" times
        Then the current atomic version should match the original atomic version
 
   Scenario: 3. Reboot the system
