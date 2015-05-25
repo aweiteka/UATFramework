@@ -158,3 +158,9 @@ def step_impl(context):
 	register_result =  context.remote_cmd(cmd='shell',
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Repo | grep disabled | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
 	assert register_result == 'Repo rh-gluster-3-splunk-for-rhel-7-server-rpms not disabled because it is not enabled', "Informational error message not found"
+
+@then(u'check if the subscription-manager issued error message when incorrect subscription keys are provided')
+def step_impl(context):
+	register_result =  context.remote_cmd(cmd='shell',
+                    module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep "not a valid key" | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
+	assert register_result == 'list is not a valid key for rh_subscription. Valid keys are', "Error message not found"
