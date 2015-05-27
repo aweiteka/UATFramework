@@ -87,7 +87,7 @@ def step_impl(context):
 
 	assert cloudinit_completed[0].has_key('failed') == False, "The cloud-init service did not complete"
 
-@then(u'check if it completed successfully')
+@then(u'check if the rh_subscription_manager completed successfully')
 def step_impl(context):
 	cloudinit_result = context.remote_cmd(cmd='shell',
 					module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | tail -n1 | cut -d ":" -f4 | sed "s/^ //"')[0]['stdout']
@@ -111,7 +111,7 @@ def step_impl(context):
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep "Enabled the following repos" | cut -d ":" -f5 | sed "s/^ //"')[0]['stdout']
 	assert repoids_enabled == 'rhel-7-server-optional-beta-rpms, rhel-7-server-beta-debug-rpms', "Configured repoids weren't enabled"
 
-@then(u'check if it failed')
+@then(u'check if the rh_subscription_manager failed to complete')
 def step_impl(context):
 	cloudinit_result = context.remote_cmd(cmd='shell',
 					module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | tail -n1 | cut -d ":" -f4 | sed "s/^ //"')[0]['stdout']
@@ -147,13 +147,13 @@ def step_impl(context):
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Repo | grep exist | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
 	assert register_result == 'Repo rhel-7-server-beta-debug-rpm does not appear to exist', "Error message not found"
 
-@then(u'check the already enabled message')
+@then(u'check the Repo rhel-rs-for-rhel-7-server-eus-rpms is already enabled message appearance')
 def step_impl(context):
 	register_result =  context.remote_cmd(cmd='shell',
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Repo | grep already | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
 	assert register_result == 'Repo rhel-rs-for-rhel-7-server-eus-rpms is already enabled', "Informational error message not found"
 
-@then(u'check the already disabled message')
+@then(u'check the Repo rh-gluster-3-splunk-for-rhel-7-server-rpms not disabled because it is not enabled message appearance')
 def step_impl(context):
 	register_result =  context.remote_cmd(cmd='shell',
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Repo | grep disabled | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']

@@ -8,7 +8,7 @@ Background: Atomic hosts are discovered
   Scenario: 0. subscription-manager plugin has failed
        Given cloud-init on "all" host is running
        Then wait for rh_subscription_manager plugin to finish
-        and check if it failed
+        and check if the rh_subscription_manager failed to complete
 
   Scenario: 1. subscription-manager fails to register with bad password
        Given cloud-init on "all" host is running

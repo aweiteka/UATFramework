@@ -8,7 +8,7 @@ Background: Atomic hosts are discovered
   Scenario: 0. subscription-manager plugin has been run successfully
        Given cloud-init on "all" host is running
        Then wait for rh_subscription_manager plugin to finish
-        and check if it completed successfully
+        and check if the rh_subscription_manager completed successfully
 
   Scenario: 1. subscription-manager registers successfully
        Given cloud-init on "all" host is running
@@ -20,5 +20,5 @@ Background: Atomic hosts are discovered
 
   Scenario: 3. subscription-manager plugin issues informational message about already enabled/disabled repos
        Given cloud-init on "all" host is running
-       Then check the already enabled message
-		and check the already disabled message
+       Then check the Repo rhel-rs-for-rhel-7-server-eus-rpms is already enabled message appearance
+		and check the Repo rh-gluster-3-splunk-for-rhel-7-server-rpms not disabled because it is not enabled message appearance

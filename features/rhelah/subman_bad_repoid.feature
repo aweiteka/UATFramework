@@ -8,7 +8,7 @@ Background: Atomic hosts are discovered
   Scenario: 0. subscription-manager plugin has been run successfully
        Given cloud-init on "all" host is running
        Then wait for rh_subscription_manager plugin to finish
-        and check if it completed successfully
+        and check if the rh_subscription_manager completed successfully
 
   Scenario: 1. subscription-manager plugin doesn't crash when trying to add non-existent repo
        Given cloud-init on "all" host is running
