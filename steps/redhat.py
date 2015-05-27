@@ -99,7 +99,7 @@ def step_impl(context):
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Regist | cut -d ":" -f4 | sed -e "s/^ //" -e "s/ [-a-f0-9]\+//" -e "s/ $//"')[0]['stdout']
 	assert register_result == 'Registered successfully with ID', "subscription-manager did not register successfully"
 
-@then(u'check if it successfully attached existing pools')
+@then(u'check if it successfully attached poolid 8a85f9823e3d5e43013e3ddd4e9509c4')
 def step_impl(context):
 	pools_attached = context.remote_cmd(cmd='shell',
 					module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep pools | cut -d ":" -f5 | sed "s/^ //"')[0]['stdout']
