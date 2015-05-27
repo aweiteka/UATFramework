@@ -14,9 +14,9 @@ Background: Atomic hosts are discovered
        Given cloud-init on "all" host is running
        Then check if the subscription-manager successfully registered
 
-  Scenario: 2. subscription-manager plugin attaches poolid 8a85f9823e3d5e43013e3ddd4e9509c4
+  Scenario: 2. subscription-manager plugin attaches existing pools
        Given cloud-init on "all" host is running
-       Then check if it successfully attached poolid 8a85f9823e3d5e43013e3ddd4e9509c4
+       Then check if subscription-manager successfully attached existing pools
 
   Scenario: 3. subscription-manager plugin enables existing listed repoids
        Given cloud-init on "all" host is running

@@ -13,4 +13,4 @@ Background: Atomic hosts are discovered
   Scenario: 1. subscription-manager fails to attach non-existent pool-id and attaches existent pool-id
        Given cloud-init on "all" host is running
        Then check if the subscription-manager failed to attach non-existent pool-id
-	   and check if it successfully attached poolid 8a85f9823e3d5e43013e3ddd4e9509c4
+	   and check if subscription-manager successfully attached existing pools
