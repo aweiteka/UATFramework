@@ -20,5 +20,5 @@ Background: Atomic hosts are discovered
 
   Scenario: 3. subscription-manager plugin issues informational message about already enabled/disabled repos
        Given cloud-init on "all" host is running
-       Then check the Repo rhel-rs-for-rhel-7-server-eus-rpms is already enabled message appearance
-		and check the Repo rh-gluster-3-splunk-for-rhel-7-server-rpms not disabled because it is not enabled message appearance
+       Then check the Repo "rhel-rs-for-rhel-7-server-eus-rpms" is already enabled message appearance
+		and check the Repo "rh-gluster-3-splunk-for-rhel-7-server-rpms" not disabled because it is not enabled message appearance

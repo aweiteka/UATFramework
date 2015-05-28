@@ -147,17 +147,19 @@ def step_impl(context):
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Repo | grep exist | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
 	assert register_result == 'Repo rhel-7-server-beta-debug-rpm does not appear to exist', "Error message not found"
 
-@then(u'check the Repo rhel-rs-for-rhel-7-server-eus-rpms is already enabled message appearance')
-def step_impl(context):
+@then(u'check the Repo "{reponame}" is already enabled message appearance')
+def step_impl(context, reponame):
 	register_result =  context.remote_cmd(cmd='shell',
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Repo | grep already | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
-	assert register_result == 'Repo rhel-rs-for-rhel-7-server-eus-rpms is already enabled', "Informational error message not found"
+	repo_message = 'Repo ' + reponame + ' is already enabled'
+	assert register_result == repo_message, "Informational error message not found"
 
-@then(u'check the Repo rh-gluster-3-splunk-for-rhel-7-server-rpms not disabled because it is not enabled message appearance')
-def step_impl(context):
+@then(u'check the Repo "{reponame}" not disabled because it is not enabled message appearance')
+def step_impl(context, reponame):
 	register_result =  context.remote_cmd(cmd='shell',
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep Repo | grep disabled | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
-	assert register_result == 'Repo rh-gluster-3-splunk-for-rhel-7-server-rpms not disabled because it is not enabled', "Informational error message not found"
+	repo_message = 'Repo ' + reponame + ' not disabled because it is not enabled'
+	assert register_result == repo_message, "Informational error message not found"
 
 @then(u'check if the subscription-manager issued error message when incorrect subscription keys are provided')
 def step_impl(context):
