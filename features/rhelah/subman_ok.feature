@@ -8,7 +8,7 @@ Background: Atomic hosts are discovered
   Scenario: 0. subscription-manager plugin has been run successfully
        Given cloud-init on "all" host is running
        Then wait for rh_subscription_manager plugin to finish
-        and check if it completed successfully
+        and check if the rh_subscription_manager completed successfully
 
   Scenario: 1. subscription-manager registers successfully
        Given cloud-init on "all" host is running
@@ -16,7 +16,7 @@ Background: Atomic hosts are discovered
 
   Scenario: 2. subscription-manager plugin attaches existing pools
        Given cloud-init on "all" host is running
-       Then check if it successfully attached defined pools
+       Then check if subscription-manager successfully attached existing pools
 
   Scenario: 3. subscription-manager plugin enables existing listed repoids
        Given cloud-init on "all" host is running
