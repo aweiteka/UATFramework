@@ -2,6 +2,8 @@
 
 from behave import *
 import ConfigParser
+import re
+from distutils.version import LooseVersion
 
 config = ConfigParser.ConfigParser()
 config.read('config/uat.cfg')
@@ -166,3 +168,57 @@ def step_impl(context):
 	register_result =  context.remote_cmd(cmd='shell',
                     module_args='grep cc_rh_subscription.py /var/log/cloud-init.log | grep "not a valid key" | cut -d ":" -f4 | sed -e "s/^ //"')[0]['stdout']
 	assert register_result == 'list is not a valid key for rh_subscription. Valid keys are', "Error message not found"
+
+@when(u"import Red Hat's release key 2 to the superuser's keyring succeeds")
+def step_impl(context):
+    assert context.remote_cmd("command",
+           module_args="gpg --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release"), "import of Red Hat's release key 2 failed"
+
+@then(u"verify if Red Hat's release key 2 matches public fingerprint")
+def step_impl(context):
+	gpg_out = context.remote_cmd("command", module_args="gpg --fingerprint")[0]['stdout']
+	m = re.search('567E 347A D004 4ADE 55BA  8A5F 199E 2F91 FD43 1D51',gpg_out)
+	assert m.group(0) == '567E 347A D004 4ADE 55BA  8A5F 199E 2F91 FD43 1D51', "the imported Red Hat's release key 2 does not match its public fingerprint"
+
+@when(u'download "{file}" script with sha256sum "{sha256sum}" finishes')
+def step_impl(context, file, sha256sum):
+	download_status = context.remote_cmd("get_url", module_args="url=" + file + " dest=/home/cloud-user/gpgverify.py force=yes sha256sum=" + sha256sum)
+	assert download_status[0].has_key('failed') == False, "the gpgverify.py either failed to download or its checksum was invalid"
+
+@when(u'OSTree version is lower than "{version}"')
+def step_impl(context, version):
+	atomic_host_status =  context.remote_cmd(cmd='shell',
+                    module_args='atomic host status | grep "^*"')[0]['stdout']
+	running_version = " ".join(atomic_host_status.split()).split()[3]
+	if not LooseVersion(running_version) < LooseVersion(version): 
+		context.scenario.skip(reason='OSTree version is greater or equal than ' + version + '. Skipping this scenario')
+
+@then(u'use the gpgverify.py script to verify gpg signatures')
+def step_impl(context):
+	atomic_host_status =  context.remote_cmd(cmd='shell',
+                    module_args='atomic host status | grep "^*"')[0]['stdout']
+	treeid = " ".join(atomic_host_status.split()).split()[4]
+	chmod_status =  context.remote_cmd(cmd='file',
+                    module_args='path=/home/cloud-user/gpgverify.py mode=0755')
+	assert chmod_status[0].has_key('failed') == False, "attempt to chmod 0755 /home/cloud-user/gpgverify.py failed"
+	gpgverify_out =  context.remote_cmd(cmd='command',
+                    module_args='/home/cloud-user/gpgverify.py /sysroot/ostree/repo ' + treeid)
+	assert gpgverify_out, "the gpgverify.py script crashed, the OSTree isn't signed"
+	m = re.search('(?<==> )(\w+)',gpgverify_out[0]['stdout'])
+	commit_path = '/sysroot/ostree/repo/objects/' + m.group(0)[:2] + '/' + m.group(0)[2:] + '.commit'
+	gpg_out =  context.remote_cmd(cmd='command',
+                    module_args='gpg --verify sig.0 ' + commit_path)
+	assert gpg_out, "verification of the gpg signature has failed"
+	m = re.search('(?<=Primary key fingerprint: )(.*)',gpg_out[0]['stderr'])
+	primary_key = m.group(0)
+	assert primary_key == '567E 347A D004 4ADE 55BA  8A5F 199E 2F91 FD43 1D51', "the OSTree signature does not match Red Hat's release key 2"
+
+@then(u'use ostree show command to verify gpg signatures')
+def step_impl(context):
+	atomic_host_status =  context.remote_cmd(cmd='shell',
+                    module_args='atomic host status | grep "^*"')[0]['stdout']
+	tree_version = " ".join(atomic_host_status.split()).split()[3]
+	treeid = " ".join(atomic_host_status.split()).split()[4]
+	signature_status =  context.remote_cmd(cmd='shell',
+                    module_args='ostree show ' + treeid + ' | grep 199E2F91FD431D51')
+	assert signature_status, "OSTree version " + tree_version + " isn't signed by Red Hat's release key 2"
