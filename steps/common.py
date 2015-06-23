@@ -76,6 +76,18 @@ def step_impl(context, unit, host):
     else:
         assert False
 
+@then(u'"{unit}" is restarted on "{host}"')
+def step_impl(context, unit, host):
+    '''Restart service'''
+    r = context.remote_cmd('service',
+                           host,
+                           module_args='name=%s state=restarted' % unit)
+    if r:
+        for i in r:
+            assert i['state'] == 'started' and i['changed'] is True
+    else:
+        assert False
+
 @given(u'"{host}" hosts can be pinged')
 @given('"{host}" host')
 def step(context, host):
