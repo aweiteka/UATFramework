@@ -148,6 +148,7 @@ def before_all(context):
                     return False
                 else:
                     values.append(value)
+            print(values)
             return values
 
     context.remote_cmd = remote_cmd
