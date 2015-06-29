@@ -148,7 +148,6 @@ def before_all(context):
                     return False
                 else:
                     values.append(value)
-            print(values)
             return values
 
     context.remote_cmd = remote_cmd
@@ -167,4 +166,5 @@ def after_step(context, step):
         file_logger.info('Step Error Message: %s' % step.error_message)
         if hasattr(context, 'result'):
             file_logger.info('Ansible Output: %s' % context.result)
+            print('Ansible Output: %s' % context.result)
 
