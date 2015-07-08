@@ -295,3 +295,23 @@ def step_impl(context, num):
                                     module_args='/usr/local/bin/atomic_rollback_interrupt.sh %s' % num)
 
     assert int_result, "Error while running atomic rollback interrupt script"
+
+
+@when(u'rollback and reboot occurs multiple times')
+def step_impl(context):
+    for l in range(9):
+        context.execute_steps(u'''
+            Given the original atomic version has been recorded
+             When atomic host rollback is successful
+              and wait "30" seconds for "all" to reboot
+             Then the current atomic version should not match the original atomic version
+        ''')
+
+
+@when(u'rollback occurs multiple times')
+def step_impl(context):
+    for l in range(9):
+            context.execute_steps(u'''
+                When atomic host rollback is successful
+            ''')
+
