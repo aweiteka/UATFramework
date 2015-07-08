@@ -215,7 +215,7 @@ def step_impl(context):
         "Unable to retrieve the current atomic version"
     assert current_version != context.original_version, \
         ("The current atomic version %s " % current_version +
-         "did not match the original atomic version " +
+         "erroneously matched the original atomic version " +
          "%s" % context.original_version)
 
 
