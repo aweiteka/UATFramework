@@ -310,7 +310,7 @@ def step_impl(context):
 
 @when(u'rollback occurs multiple times')
 def step_impl(context):
-    for l in range(9):
+    for l in range(10):
             context.execute_steps(u'''
                 When atomic host rollback is successful
             ''')

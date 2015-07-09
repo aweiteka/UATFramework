@@ -20,7 +20,7 @@ Background: Atomic hosts are discovered
        When wait "30" seconds for "all" to reboot
        Then the current atomic version should not match the original atomic version
 
-  Scenario: 4. Rollback multiple (9) times
+  Scenario: 4. Rollback multiple (10) times
       Given there is "2" atomic host tree deployed
         and the original atomic version has been recorded
        When rollback occurs multiple times
