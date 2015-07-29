@@ -15,7 +15,7 @@ def get_atomic_version(context):
 
     status_re = re.compile(r'^\* '
                            r'(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
-                           r' {5}(?P<version>\d+.\d+.\d+(-\d+)?)'
+                           r' {5}(?P<version>\S+)'
                            r' +(?P<id>\w{10})'
                            r' {5}(?P<osname>[\w\-]+)'
                            r' {5}(?P<refspec>[\w:\-/]+)')
