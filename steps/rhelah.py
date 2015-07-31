@@ -5,6 +5,7 @@ import re
 import time
 import filecmp
 from behave import *
+from containers_kube import get_images_id, get_running_container_id
 
 
 def get_atomic_version(context):
@@ -28,6 +29,14 @@ def get_atomic_version(context):
                 atomic_version = m.group('version')
 
     return atomic_version
+
+
+def find_mount_point(context, mountpoint):
+    '''Find atomic mount point'''
+    filter_str = "mount | grep -E '/dev/mapper/atomic-\w{64}-\w{6}\son\s%s'" % mountpoint
+    filter_result = context.remote_cmd(cmd='shell',
+                                       module_args=filter_str)
+    return filter_result
 
 
 @given(u'active tree version is at "{version}" on "{host}"')
@@ -315,3 +324,55 @@ def step_impl(context):
                 When atomic host rollback is successful
             ''')
 
+
+@when('atomic stop container')
+def step_impl(context):
+    '''stop running container'''
+    container_id = get_running_container_id(context)
+    assert container_id, "No running container"
+    assert context.remote_cmd('command',
+                               module_args='atomic stop %s' % container_id)
+
+
+@when(u'atomic mount "{container_or_image}" to a specified "{mountpoint}"')
+def step_impl(context, container_or_image, mountpoint):
+    '''mount container or image to a specified directory'''
+    container_or_image_id = None
+    if container_or_image == "container":
+        container_or_image_id = get_running_container_id(context)
+        assert container_or_image_id, "No running container"
+
+    if container_or_image == "image":
+        container_or_image_id = get_images_id(context)[0]
+        assert container_or_image_id, "No available image"
+
+    mount_result = context.remote_cmd(cmd='command',
+                                      module_args='atomic mount %s '
+                                                  '%s' % (container_or_image_id,
+                                                          mountpoint))
+
+    assert mount_result is not None, "Error while running 'atomic mount'"
+
+
+@then(u'check whether atomic mount point "{mountpoint}" exists')
+def step_impl(context, mountpoint):
+    '''check whether atomic mount point exists'''
+    filter_result = find_mount_point(context, mountpoint)
+    assert filter_result, "Error while finding mounted container"
+
+
+@when(u'atomic unmount image from previous "{mountpoint}"')
+@when(u'atomic unmount container from previous "{mountpoint}"')
+def step_impl(context, mountpoint):
+    '''unmount container or image from previous mounted directory'''
+    unmount_result = context.remote_cmd(cmd='command',
+                                        module_args='atomic unmount %s' % mountpoint)
+
+    assert unmount_result, "Error while running 'atomic unmount'"
+
+
+@then(u'check whether atomic mount point "{mountpoint}" does not exist')
+def step_impl(context, mountpoint):
+    '''check whether atomic mount point does not exist'''
+    filter_result = find_mount_point(context, mountpoint)
+    assert filter_result is not None, "Error unmounted container still exists"
