@@ -1,3 +1,4 @@
+@docker
 Feature: Docker pull
   Run 'docker pull' on list of images
 
