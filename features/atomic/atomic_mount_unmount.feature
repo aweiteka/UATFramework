@@ -1,9 +1,11 @@
+@atomic
 Feature: Atomic mount and unmount test for new upgrade tree
     Describes atomic mount/unmount container and image to specified directory
 
 Background: Atomic hosts are discovered
       Given "all" hosts from dynamic inventory
 
+  @env_check
   Scenario: 1. Host provisioned and subscribed
       Given "all" host
        When "all" host is auto-subscribed to "stage"
@@ -46,6 +48,7 @@ Background: Atomic hosts are discovered
   Scenario: 10. remove docker image
        Then remove docker image "busybox"
 
+  @clean_up
   Scenario: 11. Unregister
        Then "all" host is unsubscribed and unregistered
         and subscription status is unknown on "all"

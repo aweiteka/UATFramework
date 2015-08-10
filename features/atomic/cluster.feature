@@ -1,3 +1,4 @@
+@kube
 Feature: Atomic cluster smoke test
   Describes minimum functionality for Kubernetes on a multi-node Atomic cluster
   Cluster is configured using https://github.com/eparis/kubernetes-ansible
