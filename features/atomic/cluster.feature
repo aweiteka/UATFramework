@@ -8,3 +8,4 @@ Feature: Atomic cluster smoke test
          and "0" "pods" are running
          and "2" "nodes" are running
          and "1" "services" are running
+         and nodes are ready
