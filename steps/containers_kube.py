@@ -56,7 +56,7 @@ def step_impl(context, rpm, image, host):
 @given('"{number}" "{component}" are running')
 def step_impl(context, number, component):
     '''check expected number of components are running
-       where component is pod, service, minion, etc'''
+       where component is pod, service, node, etc'''
     import json
     r = context.remote_cmd('command',
                             module_args='kubectl get %s -o json' % component)
