@@ -64,7 +64,7 @@ def step_impl(context, number, component):
         for i in r:
             data = json.loads(i['stdout'])
             # terrible hack. must be a better way
-            if data['items']:
+            if 'items' in data:
                 assert len(data['items']) is int(number)
             else:
                 assert int(number) is 0
