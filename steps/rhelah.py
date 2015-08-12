@@ -275,26 +275,34 @@ def step_impl(context):
     assert run_result, "Error while running data collection script"
 
 
-@then(u'the data collection output file is present')
+@then(u'the generated data files are retrieved')
 def step_impl(context):
+    jenkins_ws = os.getenv('WORKSPACE')
+
     stat_result = context.remote_cmd(cmd='stat',
                                      module_args='path=/var/qe/atomic_smoke_output.txt')
 
     assert stat_result, "The data collection output file is missing"
 
-
-@then(u'the data collection output files are retrieved')
-def step_impl(context):
-    jenkins_ws = os.getenv('WORKSPACE')
     fetch_result = context.remote_cmd(cmd='fetch',
                                       module_args='src=/var/qe/atomic_smoke_output.txt dest=%s/ flat=yes' % jenkins_ws)
 
-    assert fetch_result, "Error retrieving the data collection output file"
+    assert fetch_result, "Error retrieving smoketest output"
+
+    stat_result = context.remote_cmd(cmd='stat',
+                                     module_args='path=/var/qe/atomic_version.txt')
+
+    assert stat_result, "The atomic version file is missing"
+
+    fetch_result = context.remote_cmd(cmd='fetch',
+                                      module_args='src=/var/qe/atomic_version.txt dest=%s/ flat=yes' % jenkins_ws)
+
+    assert fetch_result, "Error retrieving atomic version file"
 
     fetch_result = context.remote_cmd(cmd='fetch',
                                       module_args='src=/var/qe/atomic_smoke_failed dest=%s/ flat=yes' % jenkins_ws)
 
-    assert fetch_result, "Error retrieving the data collection failure file"
+    assert fetch_result, "Error retrieving smoketest failure output"
 
 
 @given(u'the upgrade interrupt script is present')
@@ -400,7 +408,6 @@ def step_impl(context, mountpoint):
     filter_result = find_mount_point(context, mountpoint)
     assert filter_result is not None, "Error unmounted container still exists"
 
-
 @when(u'atomic update latest "{image}" from repository')
 def step_impl(context, image):
     '''Pull latest image from repository'''
@@ -465,3 +472,42 @@ def step_impl(context):
     find_result = get_specified_image(context, '*<none>', images_info)
 
     assert not find_result, "Error still can find dangling images on the system"
+
+
+@when(u'"{list_type}" RPM list is collected')
+def step_impl(context, list_type):
+    ver_res = context.remote_cmd(cmd='shell',
+                                 module_args="atomic host status | grep \* | awk '{print $4}' > /var/qe/%s_atomic_version" % list_type)
+
+    assert ver_res, "Error determining atomic host version"
+
+    rpm_list_res = context.remote_cmd(cmd='shell',
+                                      module_args='rpm -qa | sort > /var/qe/%s_rpm_list' %
+                                                  list_type)
+
+    assert rpm_list_res, "Error retrieving list of installed RPMs"
+
+
+@then(u'the text file with the "{list_type}" RPM list is retrieved')
+def step_impl(context, list_type):
+    jenkins_ws = os.getenv('WORKSPACE')
+    file_res = context.remote_cmd(cmd='stat',
+                                  module_args='path=/var/qe/%s_rpm_list' % list_type)
+
+    assert file_res, "The text file with the %s RPM list was not present" % list_type
+
+    file_res = context.remote_cmd(cmd='stat',
+                                  module_args='path=/var/qe/%s_atomic_version' % list_type)
+
+    assert file_res, "The text file with the %s atomic verstion was not present" % list_type
+
+    fetch_result = context.remote_cmd(cmd='fetch',
+                                      module_args='src=/var/qe/%s_rpm_list dest=%s/ flat=yes' % (list_type, jenkins_ws))
+
+    assert fetch_result, "Error retrieving %s RPM list" % list_type
+
+    fetch_result = context.remote_cmd(cmd='fetch',
+                                      module_args='src=/var/qe/%s_atomic_version dest=%s/ flat=yes' % (list_type, jenkins_ws))
+
+    assert fetch_result, "Error retrieving %s atomic version file"
+

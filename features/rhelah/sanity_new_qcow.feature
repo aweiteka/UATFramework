@@ -9,8 +9,7 @@ Background: Atomic hosts are discovered
   Scenario: 0. Collect the data about the system
       Given the data collection script is present
        When the data collection script is run
-       Then the data collection output file is present
-        and the data collection output files are retrieved
+       Then the generated data files are retrieved
 
   Scenario: 1. Host unprovisioned and 'atomic host upgrade' is used
       Given the original atomic version has been recorded
