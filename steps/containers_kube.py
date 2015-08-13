@@ -111,3 +111,9 @@ def step_impl(context):
                             assert condition['status'] == 'True'
     else:
         assert False
+
+@when('docker build an image from "{Dockerfile}"')
+def step_impl(context, dockerfile):
+    '''Build an image from a Dockerfile'''
+    assert context.remote_cmd('command',
+                               module_args='docker build %s' % dockerfile)
