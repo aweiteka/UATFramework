@@ -39,6 +39,29 @@ def find_mount_point(context, mountpoint):
     return filter_result
 
 
+def get_images(context):
+    '''Get all installed container images on your system'''
+    images_result = context.remote_cmd(cmd='command',
+                                       module_args='atomic images')
+    assert images_result, "Error while running 'atomic images'"
+    return images_result[0]['stdout'].splitlines()
+
+
+def get_specified_image(context, image, images_info):
+    '''Get specified image on your system'''
+    find_image = None
+    # Only show images line
+    real_images = images_info[1:]
+    if not real_images:
+        return find_image
+
+    for image_line in real_images:
+        if image in image_line:
+            find_image = image_line
+            break
+    return find_image
+
+
 @given(u'active tree version is at "{version}" on "{host}"')
 @then(u'active tree version is at "{version}" on "{host}"')
 def step_impl(context, version, host):
@@ -376,3 +399,69 @@ def step_impl(context, mountpoint):
     '''check whether atomic mount point does not exist'''
     filter_result = find_mount_point(context, mountpoint)
     assert filter_result is not None, "Error unmounted container still exists"
+
+
+@when(u'atomic update latest "{image}" from repository')
+def step_impl(context, image):
+    '''Pull latest image from repository'''
+    update_result = context.remote_cmd(cmd='command',
+                                       module_args='atomic update %s' % image)
+
+    assert update_result, "Error while running 'atomic update'"
+
+
+@then(u'check whether "{image}" is installed')
+def step_impl(context, image):
+    '''Check whether specified image is installed on your system'''
+    images_info = get_images(context)
+    find_result = get_specified_image(context, image, images_info)
+
+    assert find_result, "Error can't find specified image on the system"
+
+
+@when(u'Remove "{container_or_image}" from system')
+def step_impl(context, container_or_image):
+    '''Remove container or image from system'''
+    assert context.remote_cmd(cmd='command',
+                              module_args='atomic uninstall %s' % container_or_image)
+
+
+@then(u'Check whether "{image}" is removed from system')
+def step_impl(context, image):
+    '''Check whether specified image is removed from system'''
+    images_info = get_images(context)
+    find_result = get_specified_image(context, image, images_info)
+
+    assert not find_result, "Error still can find specified image on the system"
+
+
+@given(u'List all locally installed container images')
+@when(u'List all locally installed container images')
+def step_impl(context):
+    '''List all installed container images on your system'''
+    assert get_images(context)
+
+
+@then(u'Check whether dangling images exist')
+def step_impl(context):
+    '''Check whether specified image is installed on your system'''
+    images_info = get_images(context)
+    find_result = get_specified_image(context, '*<none>', images_info)
+
+    assert find_result, "Error can't find dangling images on the system"
+
+
+@when(u'Remove all dangling images')
+def step_impl(context):
+    '''Remove all dangling images on your system'''
+    assert context.remote_cmd(cmd='command',
+                              module_args='atomic images --prune')
+
+
+@then(u'Check whether dangling images do not exist')
+def step_impl(context):
+    '''Check whether dangling images are removed from your system'''
+    images_info = get_images(context)
+    find_result = get_specified_image(context, '*<none>', images_info)
+
+    assert not find_result, "Error still can find dangling images on the system"
