@@ -5,30 +5,77 @@ import re
 import time
 import filecmp
 from behave import *
+from distutils.version import LooseVersion
 from containers_kube import get_images_id, get_running_container_id
 
 
 def get_atomic_version(context):
-    version_result = context.remote_cmd(cmd='command',
+    atomic_status = get_atomic_status(context)
+    atomic_version = ""
+    for item in atomic_status:
+        if item['selected']:
+            atomic_version = item['version']
+            break
+
+    return atomic_version
+
+def get_atomic_status(context):
+    status_result =  context.remote_cmd(cmd='command',
                                         module_args='atomic host status')
 
-    assert version_result, "Error running 'atomic host status'"
+    assert status_result, "Error running 'atomic host status'"
 
-    status_re = re.compile(r'^\* '
-                           r'(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
+
+    status_re = re.compile(r'(?P<timestamp>.*?\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
                            r' {5}(?P<version>\S+)'
                            r' +(?P<id>\w{10})'
                            r' {5}(?P<osname>[\w\-]+)'
                            r' {5}(?P<refspec>[\w:\-/]+)')
 
-    atomic_version = None
-    for item in version_result:
+    atomic_host_status = []
+    context.atomic_host_status = ""
+    for item in status_result:
+        context.atomic_host_status += item['stdout']
         for l in item['stdout'].split('\n'):
-            m = status_re.search(l)
-            if m:
-                atomic_version = m.group('version')
+            tmp = status_re.search(l)
+            if tmp:
+                tmp_dict = tmp.groupdict()
+                timestamp = tmp_dict['timestamp']
+                if re.match("\*", timestamp):
+                    tmp_dict['selected'] = True
+                    tmp_dict['timestamp'] = re.findall('\*\s+(.*)',
+                                                       timestamp)[0]
+                else:
+                    tmp_dict['selected'] = False
+                    tmp_dict['timestamp'] = timestamp.strip()
+                atomic_host_status.append(tmp_dict)
 
-    return atomic_version
+    return atomic_host_status
+
+
+def is_select_old_version(context):
+    atomic_status = get_atomic_status(context)
+    time_format = '%Y-%m-%d %H:%M:%S'
+
+    for item in atomic_status:
+        if item['selected']:
+            current_version = LooseVersion(item['version'])
+            current_timestamp = time.strptime(item['timestamp'], time_format)
+        else:
+            another_version = LooseVersion(item['version'])
+            another_timestamp = time.strptime(item['timestamp'], time_format)
+
+    if current_version < another_version:
+        return True
+    if current_version == another_version:
+        if current_timestamp < another_timestamp:
+            return True
+
+    return False
+
+
+def get_atomic_host_tree_num(context):
+    return len(get_atomic_status(context))
 
 
 def find_mount_point(context, mountpoint):
@@ -155,14 +202,29 @@ def step_impl(context):
 @given(u'there is "{num}" atomic host tree deployed')
 @then(u'there is "{num}" atomic host tree deployed')
 def step_impl(context, num):
-    status_result = context.remote_cmd(cmd='command',
-                                       module_args='atomic host status')
-
-    assert status_result, "Error running 'atomic host status'"
-
-    for r in status_result:
-        assert len(r['stdout'].split('\n')) == int(num) + 1, \
+    context.ah_tree_num = get_atomic_host_tree_num(context) 
+    assert context.ah_tree_num == int(num), \
             "Did not find the expected number of deployments (%s)" % num
+
+
+@given(u'get the number of atomic host tree deployed')
+def step_impl(context):
+    context.ah_tree_num = get_atomic_host_tree_num(context)
+
+
+@when(u'confirm atomic host tree to old version')
+def step_impl(context):
+    if context.ah_tree_num == 2 and not is_select_old_version(context):
+        context.execute_steps(u'''
+            When atomic host rollback is successful
+            Then wait "30" seconds for "all" to reboot
+        ''')
+
+
+    assert context.ah_tree_num == 1 or is_select_old_version(context), \
+           ("Atomic host tree deployed in a new version. "
+            "Current status is:\n%s" % context.atomic_host_status)
+    
 
 
 @then(u'atomic host rollback should return a deployment error')

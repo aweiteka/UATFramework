@@ -11,8 +11,9 @@ Background: Atomic hosts are discovered
         and "1" entitlement is consumed on "all"
 
   Scenario: 2. Upgrade to latest release
-      Given there is "1" atomic host tree deployed
-       When atomic host upgrade is successful
+      Given get the number of atomic host tree deployed
+       When confirm atomic host tree to old version
+        And atomic host upgrade is successful
        Then there is "2" atomic host tree deployed
 
   Scenario: 3. Reboot into new deployment
