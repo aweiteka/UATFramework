@@ -89,6 +89,7 @@ def step_impl(context, seconds, host):
     '''Reboot a host and wait a specified time for it to come back'''
     # Arguably, this step can probably be done more elegantly, but right now
     # this works just fine.
+    start_time = time.time()
     reboot_result = context.remote_cmd(cmd='command',
                                        host=host,
                                        module_args='systemctl reboot',
@@ -97,6 +98,17 @@ def step_impl(context, seconds, host):
                                                     'ignore_errors': True})
 
     time.sleep(float(seconds))
+    end_time = time.time()
+
+    uptime_result = context.remote_cmd(cmd='command', host=host,
+                                       module_args='cat /proc/uptime')
+
+    if uptime_result:
+        uptime = uptime_result[0]['stdout'].split()[0]
+
+        assert float(uptime) < end_time - start_time, \
+               "Host not reboot at all"
+
     ping_result = context.remote_cmd(cmd='ping',
                                      host=host)
     assert ping_result, "Unable to ping host after reboot"
