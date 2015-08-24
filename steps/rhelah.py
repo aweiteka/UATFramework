@@ -62,6 +62,16 @@ def get_specified_image(context, image, images_info):
     return find_image
 
 
+def get_image_label(context, image, target='local'):
+    '''Display label information about an image'''
+    module_args = 'atomic info'
+    if target == 'remote':
+        module_args += ' --%s' % target
+    label_result = context.remote_cmd(cmd='command',
+                                      module_args='%s %s' % (module_args, image))
+    return label_result
+
+
 @given(u'active tree version is at "{version}" on "{host}"')
 @then(u'active tree version is at "{version}" on "{host}"')
 def step_impl(context, version, host):
@@ -511,3 +521,18 @@ def step_impl(context, list_type):
 
     assert fetch_result, "Error retrieving %s atomic version file"
 
+
+@when(u'Display LABEL information about an image "{image}"')
+@when(u'Display LABEL information about a "{target}" image "{image}"')
+def step_impl(context, image, target='local'):
+    '''Display label information about an image'''
+    label_result = get_image_label(context, image, target)
+    for label in label_result:
+        context.current_label = label['stdout'].splitlines()
+
+
+@then(u'Check LABEL "{label}" information for an image')
+def step_impl(context, label):
+    '''Check label information for an image'''
+    assert label in context.current_label, "The current label information \
+                                            doesn't match with setting"
