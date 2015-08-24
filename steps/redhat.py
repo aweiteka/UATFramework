@@ -224,3 +224,9 @@ def step_impl(context):
 	signature_status =  context.remote_cmd(cmd='shell',
                     module_args='ostree show ' + treeid + ' | grep ' + rh_gpg_fingerprint_short)
 	assert signature_status, "OSTree version " + tree_version + " isn't signed by Red Hat's release key 2"
+
+@then(u'check whether there are no references to the "{pattern}"')
+def step_impl(context, pattern):
+	pattern_occurence =  context.remote_cmd(cmd='command',
+                    module_args='sudo find / \( -path "/proc" -o -path "/sys" -o -path "/dev" -o -path "/sysroot" -o -path "/var/home" \) -prune -o -type f -exec grep -nHI "' + pattern + '" {} \;')
+	assert pattern_occurence == "", "Fail, the " + pattern + " is present on the system."
