@@ -6,7 +6,7 @@ import time
 import filecmp
 from behave import *
 from distutils.version import LooseVersion
-from containers_kube import get_images_id, get_running_container_id
+from docker import get_images_id, get_running_container_id
 
 
 def get_atomic_version(context):
