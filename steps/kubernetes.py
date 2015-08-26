@@ -1,44 +1,42 @@
 '''test methods for kubernetes'''
 
 import re
+import json
 from behave import *
+
+
+def kubectl_get(context, component):
+
+    # NB: Note that we aggregate across masters. This doesn't matter in reality
+    # since our cluster test uses only one master. But if we ever change to
+    # using multiple masters, things will be different.
+
+    r = context.remote_cmd('command',
+                           module_args='kubectl get %s -o json' % component)
+    assert r, "unable to get %s" % component
+
+    items = []
+    for i in r:
+        data = json.loads(i['stdout'])
+        if 'items' in data:
+            items.extend(data['items'])
+    return items
+
+
+def node_is_ready(node):
+    for condition in node['status']['conditions']:
+        if condition['type'] == "Ready":
+            return condition['status'] == 'True'
+    return False
 
 
 @given('"{number}" "{component}" are running')
 def step_impl(context, number, component):
     '''check expected number of components are running
        where component is pod, service, node, etc'''
-    import json
-    r = context.remote_cmd('command',
-                            module_args='kubectl get %s -o json' % component)
-    if r:
-        for i in r:
-            data = json.loads(i['stdout'])
-            # terrible hack. must be a better way
-            if 'items' in data:
-                assert len(data['items']) is int(number)
-            else:
-                assert int(number) is 0
-    else:
-        assert False
+    assert len(kubectl_get(context, component)) is int(number)
 
 @given('nodes are ready')
 def step_impl(context):
-    '''check whether the nodes are ready'''
-    import json
-    r = context.remote_cmd('command', module_args='kubectl get nodes -o json')
-
-    if r:
-        for i in r:
-            data = json.loads(i['stdout'])
-            if 'items' not in data:
-                assert True # trivially true
-            else:
-                # We need to find the Ready condition type and check its status.
-                # See docs/admin/node.md#node-condition in kubernetes repo.
-                for node in data['items']:
-                    for condition in node['status']['conditions']:
-                        if condition['type'] == "Ready":
-                            assert condition['status'] == 'True'
-    else:
-        assert False
+    for node in kubectl_get(context, "nodes"):
+        assert node_is_ready(node)
