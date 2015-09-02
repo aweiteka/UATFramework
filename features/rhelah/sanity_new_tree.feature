@@ -18,7 +18,7 @@ Background: Atomic hosts are discovered
   Scenario: 3. Reboot into the new deployment
       Given there is "2" atomic host tree deployed
         and the original atomic version has been recorded
-       When wait "30" seconds for "all" to reboot
+       When wait "60" seconds for "all" to reboot
        Then the current atomic version should not match the original atomic version
 
   Scenario: 4. Unregister from production
@@ -42,7 +42,7 @@ Background: Atomic hosts are discovered
   Scenario: 8. Reboot into the new deployment
       Given there is "2" atomic host tree deployed
         and the original atomic version has been recorded
-       When wait "30" seconds for "all" to reboot
+       When wait "60" seconds for "all" to reboot
        Then the current atomic version should not match the original atomic version
 
   Scenario: 9. Gather upgraded RPM list
@@ -58,7 +58,7 @@ Background: Atomic hosts are discovered
       Given there is "2" atomic host tree deployed
         and the original atomic version has been recorded
        When atomic host rollback is successful
-        and wait "30" seconds for "all" to reboot
+        and wait "60" seconds for "all" to reboot
        Then the current atomic version should not match the original atomic version
 
   Scenario: 12. Unregister
