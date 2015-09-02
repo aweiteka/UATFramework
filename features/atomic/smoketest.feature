@@ -23,7 +23,7 @@ Background: Atomic hosts are discovered
   Scenario: 3. Docker smoke test
       Given "docker" is already installed on "cihosts"
         and "docker" is already running on "cihosts"
-       When docker pull "rhel7" on "cihosts"
+       When docker pull "rhel7"
        Then rpm "bind" is installed in "rhel7" on "cihosts"
 
   @kube
