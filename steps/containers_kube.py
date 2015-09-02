@@ -112,7 +112,7 @@ def step_impl(context):
     else:
         assert False
 
-@when('docker build an image from "{Dockerfile}"')
+@when('docker build an image from "{dockerfile}"')
 @when('docker build an image with tag "{tag}" from "{dockerfile}"')
 def step_impl(context, dockerfile, tag=''):
     '''Build an image from a Dockerfile'''
