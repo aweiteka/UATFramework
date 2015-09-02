@@ -4,6 +4,7 @@ python:
 install:
   - pip install -r requirements.txt
   - pip install flake8
-#before_script:
+before_script:
 #  - flake8 environment.py
+  - cp config/uat.cfg.sample config/uat.cfg
 script: behave --dry-run features/rhelah/
