@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/aweiteka/UATFramework.svg?branch=master)](https://travis-ci.org/aweiteka/UATFramework)
+
 ## About
 
 This is a lightweight framework to perform User Acceptance Testing (UAT) using a Behavior Driven Development (BDD) model.
