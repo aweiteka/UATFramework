@@ -43,8 +43,8 @@ Background: Atomic hosts are discovered
 
   @kube
   Scenario: 5. kubectl smoke test
-       Given "0" pods on "cihosts"
-         and "0" services on "cihosts"
+       Given "0" "pods" are running
+         and "0" "services" are running
 
   @clean_up
   Scenario: 6. Unregister
