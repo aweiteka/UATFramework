@@ -1,3 +1,4 @@
+sudo: false
 language: python
 python:
   - "2.7"
@@ -7,4 +8,6 @@ install:
 before_script:
 #  - flake8 environment.py
   - cp config/uat.cfg.sample config/uat.cfg
-script: behave --dry-run features/rhelah/
+script: 
+  - behave --dry-run features/rhelah/
+  - behave --dry-run features/atomic/
