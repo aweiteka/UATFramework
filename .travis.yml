@@ -10,4 +10,3 @@ before_script:
   - cp config/uat.cfg.sample config/uat.cfg
 script: 
   - behave --dry-run features/rhelah/
-  - behave --dry-run features/atomic/
