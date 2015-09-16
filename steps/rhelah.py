@@ -323,6 +323,9 @@ def step_impl(context):
 
     assert upgrade_result, "Error performing 'atomic host upgrade"
 
+    for r in upgrade_result:
+        assert "No upgrade available" not in r['stdout'], \
+            "Upgrade is unexpectedly not available"
 
 @then(u'the current atomic version should not match the original atomic version')
 def step_impl(context):
