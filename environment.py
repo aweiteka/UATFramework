@@ -3,8 +3,13 @@ from __future__ import print_function
 
 # define the necessary logging features to write messages to a file
 import logging
-from datetime import datetime
 import os
+import re
+
+from datetime import datetime
+
+import env_setup 
+
 
 if os.getenv("WORKSPACE") is not None:
     logdir = os.getenv("WORKSPACE") + "/logs"
@@ -38,6 +43,12 @@ def before_all(context):
 
     config = ConfigParser.ConfigParser()
     config.read('config/uat.cfg')
+
+    context.test_cfg = ConfigParser.ConfigParser()
+    context.test_cfg.read('config/test.cfg')
+
+    for key, value in context.test_cfg.items("default"):
+        setattr(context, key, value)
 
     def api(app, path, payload=None, method=None):
         '''Generic interface for making application API calls
@@ -168,3 +179,57 @@ def after_step(context, step):
             file_logger.info('Ansible Output: %s' % context.result)
             print('Ansible Output: %s' % context.result)
 
+
+def before_feature(context, feature):
+    """
+    These run before each feature file is exercised as preparetion steps. It
+    works with tags marked in each feautre file. Pick up functions from
+    env_setup.py based on the tags, and the parameters needed is passed by
+    test_cfg.
+    """
+    feature_sec_name = re.findall("(\w+)\.feature", feature.filename)[0]
+    if context.test_cfg.has_section(feature_sec_name):
+        for key, value in context.test_cfg.items(feature_sec_name):
+            setattr(context, key, value)
+
+    for tag in feature.tags:
+        tag_prepare = "%s_prepare" % tag
+        if hasattr(env_setup, tag_prepare):
+            test_tag = tag_prepare
+        elif hasattr(env_setup, tag):
+            test_tag = tag
+        else:
+            continue
+
+        func = getattr(env_setup, test_tag)
+        try:
+            func(context)
+        except Exception, err:
+            print("%s failed with following error: %s" % (test_tag,
+                                                          err.message))
+
+
+
+def after_feature(context, feature):
+    """
+    These run after each feature file is exercised as clean up steps. It
+    works with tags marked in each feautre file. Pick up functions from
+    env_setup.py based on the tags, and the parameters needed is passed by
+    test_cfg.
+    """
+    feature.tags.reverse()
+    for tag in feature.tags:
+        tag_cleanup = "%s_cleanup" % tag
+        if hasattr(env_setup, tag_cleanup):
+            test_tag = tag_cleanup
+        elif hasattr(env_setup, tag):
+            test_tag = tag
+        else:
+            continue
+
+        func = getattr(env_setup, test_tag)
+        try:
+            func(context)
+        except Exception, err:
+            print("%s failed with following error: %s" % (test_tag,
+                                                          err.message))

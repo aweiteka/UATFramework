@@ -1,0 +1,3 @@
+[default]
+hosts = all
+subman_server = stage
