@@ -1,8 +1,7 @@
 Feature: Check if the current tree is signed with Red Hat's release key 2
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
-        and "all" host
+      Given "all" host
 
   Scenario: 0. import Red Hat's release key 2 and verify it's public fingerprint 
        When import Red Hat's release key 2 to the superuser's keyring succeeds

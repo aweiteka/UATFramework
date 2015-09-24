@@ -3,7 +3,7 @@ Feature: Atomic info test for new upgrade tree
     Describes display label information about a local and remote image
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
+      Given "all" hosts can be pinged
 
   Scenario: 1. Build a new image with new tag from Dockerfile
        When docker build an image with tag "scratch_test" from "https://raw.githubusercontent.com/projectatomic/atomic/master/tests/test-images/Dockerfile.2"

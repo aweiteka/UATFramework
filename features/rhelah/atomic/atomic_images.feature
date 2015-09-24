@@ -3,7 +3,7 @@ Feature: Atomic images test for new upgrade tree
     Describes listing locally installed images and removing all dangling images on your system
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
+      Given "all" hosts can be pinged
 
   Scenario: 1. Pull latest image from repository
       Given List all locally installed container images

@@ -3,8 +3,7 @@ Feature:  Verifies that the 'atomic host upgrade' can be interrupted
           multiple times without error
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
-        and "all" hosts can be pinged
+      Given "all" hosts can be pinged
 
   Scenario: 1. Start upgrade process and interrupt 7 times
       Given the upgrade interrupt script is present

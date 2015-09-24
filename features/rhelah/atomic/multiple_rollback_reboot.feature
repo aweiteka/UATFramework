@@ -2,8 +2,7 @@
 Feature:  Verifies that 'atomic host rollback' followed by a reboot can be used multiple times without error
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
-        and "all" hosts can be pinged
+      Given "all" hosts can be pinged
 
   Scenario: 1. Reboot into new deployment
       Given there is "2" atomic host tree deployed

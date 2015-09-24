@@ -2,8 +2,7 @@ Feature: Atomic cloud-init subscription-manager plugin test (bad password)
     Tests whether subscription-manager fails to register when provided with bad password
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
-        and "all" host
+      Given "all" host
 
   Scenario: 0. subscription-manager plugin has failed
        Given cloud-init on "all" host is running

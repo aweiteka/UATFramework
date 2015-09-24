@@ -2,8 +2,7 @@ Feature: Atomic cloud-init subscription-manager plugin test (bad subscription ke
     Tests whether subscription-manager fails to complete when incorrect subscription keys are provided
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
-        and "all" host
+      Given "all" host
 
   Scenario: 0. subscription-manager plugin has failed
        Given cloud-init on "all" host is running

@@ -2,8 +2,7 @@ Feature: Atomic cloud-init subscription-manager plugin test (re-enable/re-disabl
     Tests whether subscription-manager successfully finishes when attempting to enable/disable already enabled/disabled repos and issues informational message
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
-        and "all" host
+      Given "all" host
 
   Scenario: 0. subscription-manager plugin has been run successfully
        Given cloud-init on "all" host is running

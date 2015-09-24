@@ -3,7 +3,7 @@ Feature: Atomic mount and unmount test for new upgrade tree
     Describes atomic mount/unmount container and image to specified directory
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
+      Given "all" hosts can be pinged
 
   Scenario: 1. docker pull image
       Given "docker" is already running on "all"

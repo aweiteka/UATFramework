@@ -1,3 +1,11 @@
 [default]
 hosts = all
 subman_server = stage
+inventory = dynamic
+target_host = all
+[unique_machine-id]
+target_host = host1,host2
+[rht-registration-from-rubygems]
+target_host = cihosts
+[rht-registration-from-source]
+target_host = cihosts

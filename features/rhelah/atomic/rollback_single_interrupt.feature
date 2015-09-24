@@ -3,8 +3,7 @@ Feature:  Verifies that the 'atomic host rollback' can be interrupted
           a single time without error
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
-        and "all" hosts can be pinged
+      Given "all" hosts can be pinged
 
   Scenario: 1. Reboot into new deployment
       Given there is "2" atomic host tree deployed
