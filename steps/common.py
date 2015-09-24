@@ -1,6 +1,116 @@
 '''Common test methods'''
 
+import os
+import re
+
 from behave import *
+
+
+def exec_service_cmd(context, action, service_name, host=None):
+    if host == None:
+        host = context.target_host
+
+    #cmd = context.service_cmd
+    cmd = "systemctl ACTION SERVICE_NAME"
+    cmd = re.sub("ACTION", action, cmd)
+    cmd = re.sub("SERVICE_NAME", service_name, cmd)
+
+    result = context.remote_cmd(cmd='command',
+                                host=host,
+                                module_args=cmd,
+                                ignore_rc=True)
+
+    if action == "status":
+        emsg = "Can not get the status of service %s" % service_name
+    else:
+        emsg = "Can not %s service %s" % (action, service_name)
+
+    assert result, emsg
+
+    return result[0]['stdout']
+
+
+@given(u'get the services from configure file')
+def step_impl(context):
+    svcs_all = {}
+    for item in context.test_cfg.items('service_check'):
+        svcs_all[item[0]] = item[1].split()
+    context.svcs_all = svcs_all
+
+
+@then(u'update services original status')
+def step_impl(context):
+    status_data = {}
+    svcs_disabled = {}
+    svcs_running = {}
+    svcs_not_exist = {}
+    load_pattern = "Loaded:.*(disable|enable)"
+    active_pattern = "Active:.*(running)"
+
+    for host in context.svcs_all:
+        svcs_disabled[host] = []
+        svcs_running[host] = []
+        for svc in context.svcs_all[host]:
+            status = exec_service_cmd(context, 'status', svc, host)
+
+            loaded = re.findall(load_pattern, status)
+            if not loaded:
+                if host not in svcs_not_exist:
+                    svcs_not_exist[host] = []
+                svcs_not_exist[host].append(svc)
+                context.svcs_all[host].remove(svc)
+                continue
+            if loaded == "disabled":
+                svcs_disabled[host].append(svc)
+
+            running = re.findall(active_pattern, status)
+            if running:
+                svcs_running[host].append(svc)
+
+    context.svcs_running = svcs_running
+    context.svcs_disabled = svcs_disabled
+
+    emsg = ""
+    for host in svcs_not_exist:
+        emsg += "For host %s, service " % host
+        emsg += "'%s' is not exist" % " ".join(svcs_not_exist[host])
+    assert not svcs_not_exist, emsg
+
+
+@given(u'"{action}" "{status}" services')
+@then(u'"{action}" "{status}" services')
+def step_impl(context, action, status):
+    svcs = getattr(context, "svcs_%s" % status, None)
+    assert svcs, "Can not find %s service from context" % status
+
+    for host in svcs:
+        for svc in svcs[host]:
+            exec_service_cmd(context, action, svc, host)
+
+
+@when(u'services status is "{status}"')
+@then(u'services status is "{status}"')
+def step_impl(context, status):
+    if status in ['running', 'dead', 'active', 'inactive']:
+        pattern = r"Active:.*?(%s)" % status
+        msg_pattern = r"Active:.*"
+    else:
+        pattern = r"Loaded:.*?(%s)" % status
+        msg_pattern = r"Loaded:.*"
+
+    svcs = context.svcs_all
+
+    emsg = ""
+    for host in svcs:
+        for svc in svcs[host]:
+            current_status = exec_service_cmd(context, "status", svc, host)
+            if not re.findall(pattern, current_status):
+                msg = re.findall(msg_pattern, current_status)[0]
+                emsg += ("Service %s in host %s is not %s but '%s'" %
+                         (svc, host, status, msg))
+
+    assert emsg == "", emsg
+
 
 @given(u'"{host}" hosts from dynamic inventory')
 def step_impl(context, host):
