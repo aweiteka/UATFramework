@@ -80,7 +80,7 @@ def get_atomic_host_tree_num(context):
 
 def find_mount_point(context, mountpoint):
     '''Find atomic mount point'''
-    filter_str = "mount | grep -E '/dev/mapper/atomic-\w{64}-\w{6}\son\s%s'" % mountpoint
+    filter_str = "mount | grep -E '/dev/mapper/atomicos-docker--\\w{64}\\son\\s%s'" % mountpoint
     filter_result = context.remote_cmd(cmd='shell',
                                        module_args=filter_str)
     return filter_result
