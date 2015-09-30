@@ -2,8 +2,7 @@ Feature: Atomic cloud-init subscription-manager plugin test (non-existent repo)
     Tests whether subscription-manager doesn't crash when trying to add non-existent repo
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
-        and "all" host
+      Given "all" host
 
   Scenario: 0. subscription-manager plugin has been run successfully
        Given cloud-init on "all" host is running

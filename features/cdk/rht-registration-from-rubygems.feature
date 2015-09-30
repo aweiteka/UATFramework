@@ -2,8 +2,7 @@ Feature: test vagrant-registration plugin installed from rubygems.org
 
   # set dynamic hosts
   Background: vagrant hosts are discovered
-    Given "cihosts" hosts from dynamic inventory
-    and vagrant plugin is "vagrant-registration"
+    Given vagrant plugin is "vagrant-registration"
 
   #assumes that the slave has the build requirements for a plugin
   Scenario: Install vagrant-registration from rubygems.org

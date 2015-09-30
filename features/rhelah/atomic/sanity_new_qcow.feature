@@ -3,8 +3,7 @@ Feature: Atomic host sanity test for new QCOW images
     QCOW image install.
 
 Background: Atomic hosts are discovered
-      Given "all" hosts from dynamic inventory
-        and "all" host
+      Given "all" host
 
   Scenario: 0. Collect the data about the system
       Given the data collection script is present
