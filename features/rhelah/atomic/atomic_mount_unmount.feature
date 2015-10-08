@@ -18,7 +18,7 @@ Background: Atomic hosts are discovered
        Then check whether atomic mount point "/var/mnt" does not exist
 
   Scenario: 4. docker run busybox with detach mode
-       When docker run "busybox" detach mode with "/usr/bin/top -b"
+       When docker run "busybox" detach mode with "top -b"
        Then check whether there is a running container
 
   Scenario: 5. mount running container to a specified directory
