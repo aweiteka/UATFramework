@@ -10,6 +10,13 @@ config.read('config/uat.cfg')
 rh_gpg_fingerprint = '567E 347A D004 4ADE 55BA  8A5F 199E 2F91 FD43 1D51'
 rh_gpg_fingerprint_short = '199E2F91FD431D51'
 
+def get_ipaddr(context, host):
+    r = context.remote_cmd("setup",
+                            host,
+                            module_args="filter=ansible_default_ipv4")
+    assert r, "Couldn't obtain host IP address"
+    return r[0]['ansible_facts']['ansible_default_ipv4']['address']
+
 @when(u'"{host}" host is auto-subscribed to "{env}"')
 @when(u'"{host}" is auto-subscribed')
 def step_impl(context, host, env="prod"):
@@ -230,3 +237,18 @@ def step_impl(context, pattern):
 	pattern_occurence =  context.remote_cmd(cmd='command',
                     module_args='sudo find / \( -path "/proc" -o -path "/sys" -o -path "/dev" -o -path "/sysroot" -o -path "/var/home" \) -prune -o -type f -exec grep -nHI "' + pattern + '" {} \;')
 	assert pattern_occurence == "", "Fail, the " + pattern + " is present on the system."
+
+@then(u'atomic host upgrade on "{host}" using the proxy on "{proxy}" should fail')
+def step_impl(context, host, proxy):
+    ip_addr = str(get_ipaddr(context, proxy))
+    upgrade_result =  context.remote_cmd(cmd='shell',
+        host=host,
+        environment={'http_proxy': 'http://' + ip_addr + ':3128', 'https_proxy': 'https://' + ip_addr + ':3128'},
+        ignore_rc=True,
+        module_args='atomic host upgrade')[0]['stderr']
+    m = re.search('(?<=error: )(.*)', upgrade_result)
+    if m:
+        error_msg = m.group(0)
+    else:
+        error_msg = False
+    assert error_msg == "Unacceptable TLS certificate", "'Unacceptable TLS certificate' error message not found!"
