@@ -9,3 +9,5 @@ target_host = host1,host2
 target_host = cihosts
 [rht-registration-from-source]
 target_host = cihosts
+[service_check]
+all = etcd
