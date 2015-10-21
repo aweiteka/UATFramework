@@ -80,7 +80,7 @@ def get_atomic_host_tree_num(context):
 
 def find_mount_point(context, mountpoint):
     '''Find atomic mount point'''
-    filter_str = "mount | grep -E '/dev/mapper/atomicos-docker--\\w{64}\\son\\s%s'" % mountpoint
+    filter_str = "mount | grep -E '%s'" % mountpoint
     filter_result = context.remote_cmd(cmd='shell',
                                        module_args=filter_str)
     return filter_result
@@ -613,3 +613,38 @@ def step_impl(context, label):
     '''Check label information for an image'''
     assert label in context.current_label, "The current label information \
                                             doesn't match with setting"
+
+
+@when(u'Display "{image}" "{label}" of name version release')
+def step_impl(context, image, label=''):
+    '''Display image label of name version release'''
+    image_info = context.remote_cmd(cmd='command',
+                                    module_args='atomic version %s' % image)
+    if not label:
+        assert image_info, "Error can not get image info"
+    else:
+        assert label in image_info[0]['stdout'], \
+            ("The given LABEL value %s in %s " % (label, image) +
+             "does not match the current LABEL value in %s" % image_info)
+
+
+@when(u'Execute "{image}" install method')
+@when(u'Execute "{image}" install method with "{arguments}"')
+def step_impl(context, image, arguments=''):
+    '''Execute image install method'''
+    assert context.remote_cmd(cmd='command',
+                              module_args='atomic install %s %s' % (image, arguments))
+
+
+@when(u'Read the LABEL INSTALL field in the container "{image}"')
+@when(u'Read the LABEL INSTALL "{label}" field in the container "{image}"')
+def step_impl(context, image, label=''):
+    '''Check LABEL INSTALL in the image'''
+    install_label = context.remote_cmd(cmd='command',
+                                       module_args='atomic install %s' % image)
+    if not label:
+        assert install_label, "Error can not get LABEL INSTALL in the image"
+    else:
+        assert label in install_label[0]['stdout'], \
+            ("The current LABEL INSTALL %s " % install_label +
+             "does not match the expected LABEL INSTALL %s" % label)

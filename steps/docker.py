@@ -1,6 +1,7 @@
 '''test methods for docker'''
 
 import re
+import os
 from behave import *
 
 
@@ -73,12 +74,36 @@ def step_impl(context):
     container_id = get_running_container_id(context)
     assert container_id, "There is not a running container"
 
-@when('docker build an image from "{dockerfile}"')
-@when('docker build an image with tag "{tag}" from "{dockerfile}"')
-def step_impl(context, dockerfile, tag=''):
-    '''Build an image from a Dockerfile'''
-    module_args = 'docker build'
+@when('docker build an image from local "{dockerfile}"')
+@when('docker build an image from local "{path}"/"{dockerfile}"')
+@when('docker build an image with tag "{tag}" from local "{dockerfile}"')
+def step_impl(context, dockerfile, path="/var/home/cloud-user", tag=''):
+    '''Build an image from a local Dockerfile, which path default is
+       /var/home/cloud-user'''
+    src_file = os.path.join("resources/docker", dockerfile)
+    dest_file = os.path.join(path, src_file)
+    # create directory on target host
+    assert context.remote_cmd('file',
+                               module_args='path=%s state=directory' % os.path.dirname(dest_file))
+    # remotely copy dockerfile to specified directory
+    context.execute_steps(u"""
+                          when "{src_file}" is copied to "{dest_file}"
+                          """.format(src_file=src_file, dest_file=dest_file))
+    # build image from dockerfile
+    module_args = 'docker build -f %s' % dest_file
     if tag:
         module_args += ' -t %s' % tag
     assert context.remote_cmd('command',
-                               module_args='%s %s' % (module_args, dockerfile))
+                               module_args='%s .' % module_args)
+
+@when('docker remove all of images')
+def step_impl(context):
+   '''Remove all of images'''
+   assert context.remote_cmd('shell',
+                             module_args='docker images -a -q | xargs -r docker rmi')
+
+@when('docker remove all of containers')
+def step_impl(context):
+   '''Remove all of containers'''
+   assert context.remote_cmd('shell',
+                             module_args='docker ps -a -q | xargs -r docker rm')

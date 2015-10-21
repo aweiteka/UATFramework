@@ -8,7 +8,7 @@ from behave import *
 
 # Jinja2 requires an Environment to be set up in order to load templates from
 # the file system (see http://jinja.pocoo.org/docs/dev/api/#basics).
-j2env = Environment(loader=FileSystemLoader('steps/kube_resources'))
+j2env = Environment(loader=FileSystemLoader('resources/kube'))
 
 
 def kubectl_get(context, component):
@@ -48,7 +48,7 @@ def kubectl_exec(context, pod_name, command):
 
 
 def send_kube_resource(context, resource):
-    resource = 'steps/kube_resources/%s' % resource
+    resource = 'resources/kube/%s' % resource
     r = context.remote_cmd('copy', module_args='src=%s dest=.' % resource)
     assert r, "unable to send %s" % resource
 
@@ -56,7 +56,7 @@ def send_kube_resource(context, resource):
 def render_template(filename, **kwargs):
     template = j2env.get_template(filename + '.j2')
     rendered = template.render(**kwargs)
-    with open('steps/kube_resources/' + filename, 'wb') as f:
+    with open('resources/kube/' + filename, 'wb') as f:
         f.write(rendered)
 
 
@@ -120,7 +120,7 @@ def step_impl(context):
 @when('the "{pod_name}" pod is running on node "{node_idx}"')
 def step_impl(context, pod_name, node_idx):
     '''Check whether a pod exists on node. If it isn't, create it. The pod
-       definition is found in the kube_resources/ dir. Its final name will be
+       definition is found in the resources/kube/ dir. Its final name will be
        {pod_name}-{node_idx}.'''
 
     # construct the final name for this pod
@@ -182,7 +182,7 @@ def step_impl(context, pod1_name, pod2_name):
 @when('the "{svc_name}" service exists')
 def step_impl(context, svc_name):
     '''Check whether a svc exists. If it doesn't, create it. The svc definition
-       is found in the kube_resources/ dir.'''
+       is found in the resources/kube/ dir.'''
 
     # does this svc already exist?
     if not find_svc(context, svc_name):
