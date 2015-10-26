@@ -227,3 +227,12 @@ def step(context, cmd, host):
     assert context.remote_cmd(module,
                               host,
                               module_args=args)
+
+@when('checkout the git repo "{repo}" on "{host}"')
+@given('checkout the git repo "{repo}" on "{host}"')
+def step(context, repo, host):
+    "Checkout a git repo on remote host"
+    r = context.remote_cmd('git',
+                            host,
+                            module_args='repo=%s dest=/root/tools' % repo)
+    assert r, "The checkout of the git repo " + repo + " didn't complete successfully"
