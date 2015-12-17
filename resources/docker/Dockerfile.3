@@ -1,0 +1,8 @@
+FROM centos
+
+RUN yum install -y httpd
+RUN echo "Apache HTTPD" >> /var/www/html/index.html
+
+EXPOSE 80
+
+CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
