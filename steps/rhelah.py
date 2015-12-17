@@ -489,11 +489,12 @@ def step_impl(context, mountpoint):
     assert unmount_result, "Error while running 'atomic unmount'"
 
 
+@then(u'check whether "{mountpoint}" does not exist')
 @then(u'check whether atomic mount point "{mountpoint}" does not exist')
 def step_impl(context, mountpoint):
     '''check whether atomic mount point does not exist'''
     filter_result = find_mount_point(context, mountpoint)
-    assert filter_result is not None, "Error unmounted container still exists"
+    assert filter_result is not None, "Error mount point still exists"
 
 @when(u'atomic update latest "{image}" from repository')
 def step_impl(context, image):
@@ -648,3 +649,28 @@ def step_impl(context, image, label=''):
         assert label in install_label[0]['stdout'], \
             ("The current LABEL INSTALL %s " % install_label +
              "does not match the expected LABEL INSTALL %s" % label)
+
+
+@when(u'Compare the RPMs between "{imageA}" and "{imageB}"')
+@when(u'Compare the RPMs with "{arguments}" between "{imageA}" and "{imageB}"')
+@when(u'Compare the RPMs between "{imageA}" and "{imageB}" are "{rpms}" RPMs based')
+def step_impl(context, imageA, imageB, rpms='yes', arguments=''):
+   '''Compare the RPMs found in two different images or containers'''
+   options = arguments + ' ' + imageA + ' ' + imageB
+   result = context.remote_cmd(cmd='command',
+                               module_args='atomic diff %s' % options)
+   same_image_msg = "The %s is the same to %s!!" % (imageA, imageB)
+   diff_image_msg = "The %s is different from %s!!" % (imageA, imageB)
+
+   if rpms == 'no':
+       assert "not RPM based" not in result, "The image is not RPM based!!"
+
+   if rpms == 'yes' and imageA != imageB:
+       assert result, diff_image_msg
+   else:
+       if 'r' in arguments and 'json' not in arguments:
+           assert "have no different RPMs" not in result, same_image_msg
+       elif 'n' not in arguments or arguments == '' and 'json' not in arguments:
+           assert "no file differences" not in result, same_image_msg
+       else:
+           assert result, diff_image_msg
