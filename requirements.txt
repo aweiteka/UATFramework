@@ -1,4 +1,4 @@
 requests
 behave
-ansible==1.9.4
+ansible<2.0
 jinja2
