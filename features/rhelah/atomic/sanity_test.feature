@@ -7,7 +7,6 @@ Background: Atomic hosts are discovered
 
   @pull_centos_image
   Scenario: 1. Pull latest centos image from repository
-      Given List all locally installed container images
        When atomic update latest "centos" from repository
        Then Check whether "centos" is installed
 
@@ -111,7 +110,7 @@ Background: Atomic hosts are discovered
 
   @check_remote_image_label
   Scenario: 22. Display label information about a remote image
-       When Display LABEL information about a "remote" image "rhel7"
+       When Display LABEL information about a "remote" image "registry.access.redhat.com/rhel7"
        Then Check LABEL "Vendor: Red Hat, Inc." information for an image
 
   @remove_built_info_image
