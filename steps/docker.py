@@ -8,7 +8,7 @@ from behave import *
 def get_running_container_id(context):
     '''get running container id'''
     container_result = context.remote_cmd(cmd='command',
-                                        module_args='docker ps')
+                                          module_args='docker ps')
 
     assert container_result, "Error running 'docker ps'"
 
@@ -36,6 +36,12 @@ def get_images_id(context):
     for image in images_result:
         return image['stdout'].split('\n')
 
+def get_image_id_by_name(context, name):
+    '''get images id by image name'''
+    image_id = context.remote_cmd(cmd='command',
+                                       module_args='docker images -q %s' % name)
+    return image_id[0]['stdout']
+
 @when('docker pull "{image}"')
 def step_impl(context, image):
     '''docker pull image'''
@@ -62,17 +68,24 @@ def step_impl(context):
     assert context.remote_cmd('command',
                                module_args='docker stop %s' % container_id)
 
-@when('docker run "{image}" detach mode with "{command}"')
-def step_impl(context, image, command):
+@when('docker run "{image}" in detach mode with "{command}"')
+@when('docker run "{image}" in detach mode with "{name}" "{command}"')
+def step_impl(context, image, command, name='foobar'):
     '''docker run image with detach mode'''
     assert context.remote_cmd('command',
-                               module_args='docker run -d %s %s' % (image, command))
+                               module_args='docker run -d --name %s %s %s' % (name, image, command))
 
 @then('check whether there is a running container')
 def step_impl(context):
     '''check whether container is running'''
     container_id = get_running_container_id(context)
     assert container_id, "There is not a running container"
+
+@then('find latest created container by name "{name}"')
+def step_impl(context, name):
+    '''find latest created container by name'''
+    assert context.remote_cmd('shell',
+                              module_args='docker ps -l | grep %s' % name)
 
 @when('docker build an image from local "{dockerfile}"')
 @when('docker build an image from local "{path}"/"{dockerfile}"')
@@ -98,12 +111,12 @@ def step_impl(context, dockerfile, path="/var/home/cloud-user", tag=''):
 
 @when('docker remove all of images')
 def step_impl(context):
-   '''Remove all of images'''
-   assert context.remote_cmd('shell',
-                             module_args='docker images -a -q | xargs -r docker rmi')
+    '''Remove all of images'''
+    assert context.remote_cmd('shell',
+                              module_args='docker images -a -q | xargs -r docker rmi')
 
 @when('docker remove all of containers')
 def step_impl(context):
-   '''Remove all of containers'''
-   assert context.remote_cmd('shell',
-                             module_args='docker ps -a -q | xargs -r docker rm')
+    '''Remove all of containers'''
+    assert context.remote_cmd('shell',
+                              module_args='docker ps -a -q | xargs -r docker rm')
