@@ -12,7 +12,7 @@ Background: Atomic hosts are discovered
 
   @mount_image_to_path
   Scenario: 2. mount image to a specified directory
-       When atomic mount "image" to a specified "/mnt"
+       When atomic mount image "centos" to a specified "/mnt"
        Then check whether atomic mount point "/var/mnt" exists
 
   @unmount_image_from_path
@@ -27,12 +27,12 @@ Background: Atomic hosts are discovered
 
   @run_container_in_bg
   Scenario: 5. docker run centos with detach mode
-       When docker run "centos" detach mode with "top -b"
-       Then check whether there is a running container
+       When docker run "centos" in detach mode with "mount_test" "top -b"
+       Then find latest created container by name "mount_test"
 
   @mount_container_to_path
-  Scenario: 6. mount running container to a specified directory
-       When atomic mount "container" to a specified "/mnt"
+  Scenario: 6. mount running container by name to a specified directory
+       When atomic mount container "mount_test" to a specified "/mnt"
        Then check whether atomic mount point "/var/mnt" exists
 
   @unmount_container_from_path
@@ -42,7 +42,7 @@ Background: Atomic hosts are discovered
 
   @stop_container
   Scenario: 8. atomic stop previous running container
-       When atomic stop container
+       When atomic stop container "mount_test"
 
   @build_dangling_image
   Scenario: 9. Build a new image from Dockerfile
@@ -113,33 +113,37 @@ Background: Atomic hosts are discovered
        When Display LABEL information about a "remote" image "registry.access.redhat.com/rhel7"
        Then Check LABEL "Vendor: Red Hat, Inc." information for an image
 
+  @remove_all_containers
+  Scenario: 23. Remove all of containers
+       When docker remove all of containers
+
   @remove_built_info_image
-  Scenario: 23. Remove scratch_test image
+  Scenario: 24. Remove scratch_test image
        When Remove "scratch_test" from system
        Then Check whether "scratch_test" is removed from system
 
   @remove_built_label_image
-  Scenario: 24. Remove centos_label image
+  Scenario: 25. Remove centos_label image
        When Remove "centos_label" from system
        Then Check whether "centos_label" is removed from system
 
   @remove_pulled_busybox_image
-  Scenario: 25. Remove busybox image
+  Scenario: 26. Remove busybox image
        Then remove docker image "busybox"
          and Check whether "busybox" is removed from system
 
   @remove_built_apache_image
-  Scenario: 26. Remove apache image
+  Scenario: 27. Remove apache image
        Then remove docker image "centos/apache"
          and Check whether "centos/apache" is removed from system
 
   @remove_pulled_centos_image
-  Scenario: 27. Remove centos image
+  Scenario: 28. Remove centos image
        Then remove docker image "centos"
          and Check whether "centos" is removed from system
 
   @rollback_host
-  Scenario: 28. Rollback to the original deployment
+  Scenario: 29. Rollback to the original deployment
       Given there is "2" atomic host tree deployed
         and the original atomic version has been recorded
        When atomic host rollback is successful
