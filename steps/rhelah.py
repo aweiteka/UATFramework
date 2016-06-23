@@ -6,7 +6,7 @@ import time
 import filecmp
 from behave import *
 from distutils.version import LooseVersion
-from docker import get_images_id, get_running_container_id
+from docker import get_image_id_by_name, get_running_container_id
 
 
 def get_atomic_version(context):
@@ -107,6 +107,15 @@ def get_specified_image(context, image, images_info):
             find_image = image_line
             break
     return find_image
+
+
+def get_atomic_image_id_by_name(context, image_name):
+    '''Get atomic image id by name'''
+    image_id = get_image_id_by_name(context, image_name)
+    if image_id:
+        image_id = 'sha256:' + image_id
+
+    return image_id
 
 
 def get_image_label(context, image, target='local'):
@@ -444,39 +453,48 @@ def step_impl(context):
 
 
 @when('atomic stop container')
-def step_impl(context):
+@when('atomic stop container "{name}"')
+def step_impl(context, name=None):
     '''stop running container'''
-    container_id = get_running_container_id(context)
-    assert container_id, "No running container"
+    container = None
+    if name is not None:
+        container = name
+    else:
+        container = get_running_container_id(context)
+    assert container, "No running container"
     assert context.remote_cmd('command',
-                               module_args='atomic stop %s' % container_id)
+                               module_args='atomic stop %s' % container)
 
 
-@when(u'atomic mount "{container_or_image}" to a specified "{mountpoint}"')
-def step_impl(context, container_or_image, mountpoint):
-    '''mount container or image to a specified directory'''
-    container_or_image_id = None
-    if container_or_image == "container":
-        container_or_image_id = get_running_container_id(context)
-        assert container_or_image_id, "No running container"
-
-    if container_or_image == "image":
-        container_or_image_id = get_images_id(context)[0]
-        assert container_or_image_id, "No available image"
-
+@when(u'atomic mount image "{name}" to a specified "{mountpoint}"')
+def step_impl(context, name, mountpoint):
+    '''mount image to a specified directory'''
+    image_id = get_atomic_image_id_by_name(context, name)
+    assert image_id, "Can't find image '%s' id"  % name
     mount_result = context.remote_cmd(cmd='command',
                                       module_args='atomic mount %s '
-                                                  '%s' % (container_or_image_id,
+                                                  '%s' % (image_id,
                                                           mountpoint))
 
-    assert mount_result is not None, "Error while running 'atomic mount'"
+    assert mount_result is not None, "Failed to mount image '%s'" % name
+
+
+@when(u'atomic mount container "{name}" to a specified "{mountpoint}"')
+def step_impl(context, name, mountpoint):
+    '''mount container to a specified directory'''
+    mount_result = context.remote_cmd(cmd='command',
+                                      module_args='atomic mount %s '
+                                                  '%s' % (name,
+                                                          mountpoint))
+
+    assert mount_result is not None, "Failed to mount container '%s'" % name
 
 
 @then(u'check whether atomic mount point "{mountpoint}" exists')
 def step_impl(context, mountpoint):
     '''check whether atomic mount point exists'''
     filter_result = find_mount_point(context, mountpoint)
-    assert filter_result, "Error while finding mounted container"
+    assert filter_result, "Error while finding mount point %s" % mountpoint
 
 
 @when(u'atomic unmount image from previous "{mountpoint}"')
@@ -494,7 +512,7 @@ def step_impl(context, mountpoint):
 def step_impl(context, mountpoint):
     '''check whether atomic mount point does not exist'''
     filter_result = find_mount_point(context, mountpoint)
-    assert filter_result is not None, "Error mount point still exists"
+    assert filter_result is not None, "Error mount point %s still exists" % mountpoint
 
 @when(u'atomic update latest "{image}" from repository')
 def step_impl(context, image):
@@ -541,7 +559,7 @@ def step_impl(context):
 def step_impl(context):
     '''Check whether specified image is installed on your system'''
     images_info = get_images(context)
-    find_result = get_specified_image(context, '*<none>', images_info)
+    find_result = get_specified_image(context, '* <none>', images_info)
 
     assert find_result, "Error can't find dangling images on the system"
 
@@ -557,7 +575,7 @@ def step_impl(context):
 def step_impl(context):
     '''Check whether dangling images are removed from your system'''
     images_info = get_images(context)
-    find_result = get_specified_image(context, '*<none>', images_info)
+    find_result = get_specified_image(context, '* <none>', images_info)
 
     assert not find_result, "Error still can find dangling images on the system"
 
