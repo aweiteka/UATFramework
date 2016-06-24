@@ -128,6 +128,23 @@ def get_image_label(context, image, target='local'):
     return label_result
 
 
+def get_scanners(context):
+    '''Get available scanners'''
+    scanners = context.remote_cmd(cmd='command',
+                                  module_args='atomic scan --list')
+    assert not scanners is False, context.result['contacted']
+    return scanners[0]['stdout']
+
+
+def atomic_scanner(context, target, scanner, scan_type, options):
+    '''Scan images or containers or all'''
+    options = '--scanner %s --scan_type %s %s' % (scanner, scan_type, options)
+    scan_result = context.remote_cmd(cmd='command',
+                                     module_args='atomic scan %s %s' % (target, options))
+    assert not scan_result is False, context.result['contacted']
+    return scan_result[0]['stdout']
+
+
 @given(u'active tree version is at "{version}" on "{host}"')
 @then(u'active tree version is at "{version}" on "{host}"')
 def step_impl(context, version, host):
@@ -692,3 +709,48 @@ def step_impl(context, imageA, imageB, rpms='yes', arguments=''):
            assert "no file differences" not in result, same_image_msg
        else:
            assert result, diff_image_msg
+
+
+@when(u'List default scanners')
+@when(u'List available scanners')
+def step_impl(context):
+    '''List available scanners'''
+    scanners = get_scanners(context)
+    assert scanners, "Error can not list available scanners"
+
+
+@then(u'Find specified scanner "{scanner}"')
+def step_impl(context, scanner):
+    '''Find specified scanner'''
+    scanners = get_scanners(context)
+    assert scanner in scanners, "Can't find scanner '%s'" % scanner
+
+
+@when(u'Scan "{target}"')
+@when(u'Scan "{target}" with "{scanner}"')
+@when(u'Scan "{target}" with "{scanner}" and "{scan_type}"')
+@when(u'Scan "{target}" with "{scanner}" and "{scan_type}" "{options}"')
+def step_impl(context, target, scanner='openscap', scan_type='cve',
+    options='--verbose'):
+    '''Scan images or/and containers with scanner and scan type'''
+    scan_result = atomic_scanner(context, target, scanner, scan_type, options)
+    context.scan_result = scan_result
+    context.scan_type = scan_type
+
+    assert context.scan_result, "Error can't run atomic scan"
+
+
+@then(u'Check "{matches}" in scanner report')
+def step_impl(context, matches):
+    '''Check scanner result'''
+    result = context.scan_result
+    scan_type = context.scan_type
+    output = "Find '%s' in scanner report" % matches
+    if 'issues were found' in matches:
+        assert matches not in result, "Please file a '%s' type bug" % scan_type
+
+    elif 'not supported' in matches:
+        assert matches in result, "the image is not supported for this scan"
+
+    else:
+        assert matches not in result, output
