@@ -52,7 +52,7 @@ def services_status_prepare(context):
 
 def services_status_cleanup(context):
     context.execute_steps(u"""
-       When "enable" "all" services
+      Given "enable" "all" services
         And "disable" "disabled" services
        Then wait "30" seconds for "all" to reboot
         """)
