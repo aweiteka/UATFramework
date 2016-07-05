@@ -119,7 +119,7 @@ def step_impl(context, action, status):
 @when(u'services status is "{status}"')
 @then(u'services status is "{status}"')
 def step_impl(context, status):
-    if status in ['running', 'dead', 'active', 'inactive']:
+    if status in ['running', 'dead', 'active', 'inactive', 'start']:
         pattern = r"Active:.*?(%s)" % status
         msg_pattern = r"Active:.*"
     else:
