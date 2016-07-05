@@ -108,7 +108,7 @@ def before_all(context):
 
     context.api = api
 
-    def remote_cmd(cmd, host=None, ignore_rc=False, **kwargs):
+    def remote_cmd(cmd, host=None, ignore_rc=False, async=False, **kwargs):
         '''Interface to run a command on a remote host using Ansible modules
 
         host: name of host of remote target system in ansible inventory file
@@ -116,6 +116,7 @@ def before_all(context):
         cmd: an Ansible module
         ignore_rc: occasionally the command is expected to fail.  Set this to
                    True so that the output is retained and can be used
+        async: run the cmd asynchronous on a remote host.
         module_args: module args in the form of "key1=value1 key2=value2"
         Returns list of values if all hosts successful, otherwise False'''
 
@@ -141,13 +142,23 @@ def before_all(context):
         # the 'context' object can basically hold whatever we want.
         # if we stash the result from Ansible, we can inspect it or log it
         # later
-        context.result = ansible.runner.Runner(
-                 module_name=cmd,
-                 inventory=inventory,
-                 pattern=host,
-                 #remote_user=remote_user,
-                 **kwargs
-        ).run()
+        if async:
+            context.result, poller = ansible.runner.Runner(
+                     module_name=cmd,
+                     inventory=inventory,
+                     pattern=host,
+                     #remote_user=remote_user,
+                     **kwargs
+            ).run_async(context.test_timeout)
+            return poller
+        else:
+            context.result = ansible.runner.Runner(
+                     module_name=cmd,
+                     inventory=inventory,
+                     pattern=host,
+                     #remote_user=remote_user,
+                     **kwargs
+            ).run()
 
         # TODO support lists of hosts
         if context.result['dark']:
