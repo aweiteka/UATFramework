@@ -9,7 +9,7 @@ import sys
 
 from datetime import datetime
 
-import env_setup 
+import env_setup
 
 
 if os.getenv("WORKSPACE") is not None:
