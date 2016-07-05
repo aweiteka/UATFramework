@@ -5,6 +5,7 @@ from __future__ import print_function
 import logging
 import os
 import re
+import sys
 
 from datetime import datetime
 
@@ -46,6 +47,9 @@ def before_all(context):
 
     context.test_cfg = ConfigParser.ConfigParser()
     context.test_cfg.read('config/test.cfg')
+
+    path = os.path.dirname(sys.modules['env_setup'].__file__)
+    context.src_dir = os.path.join(path, "resources")
 
     for key, value in context.test_cfg.items("default"):
         setattr(context, key, value)
