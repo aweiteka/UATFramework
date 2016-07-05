@@ -178,6 +178,37 @@ def before_all(context):
 
     context.remote_cmd = remote_cmd
 
+    def get_hosts():
+        """
+        Get host group name and ip pairs from inventory.
+
+        :return: the ips for each group in inventory.
+        :rtype: dictionary
+        """
+        import ansible.runner
+        if context.inventory == "dynamic":
+            # use custom dynamic hosts script
+            host_list = config.get('ansible', 'dynamic_inventory_script')
+        else:
+            # default to static file
+            host_list = config.get('ansible', 'inventory')
+        inventory = ansible.inventory.Inventory(host_list)
+
+        host_groups = {"all": []}
+        for group in inventory.groups:
+            group_name = group.name
+            if group_name != "all":
+                host_groups[group.name] = []
+            for host in group.hosts:
+                host_groups[group.name].append(host.name)
+                if host.name not in host_groups["all"]:
+                    host_groups["all"].append(host.name)
+
+        return host_groups
+
+    context.get_hosts = get_hosts
+
+
 # After each step, we will examine the status and log any results from Ansible
 # if they exist
 def after_step(context, step):
