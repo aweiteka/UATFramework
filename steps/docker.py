@@ -3,6 +3,7 @@
 import re
 import os
 from behave import *
+from common import string_to_bool
 
 
 def get_running_container_id(context):
@@ -40,6 +41,7 @@ def get_image_id_by_name(context, name):
     '''get images id by image name'''
     image_id = context.remote_cmd(cmd='command',
                                        module_args='docker images -q %s' % name)
+    assert not image_id is False, context.result['contacted']
     return image_id[0]['stdout']
 
 @when('docker pull "{image}"')
@@ -70,10 +72,27 @@ def step_impl(context):
 
 @when('docker run "{image}" in detach mode with "{command}"')
 @when('docker run "{image}" in detach mode with "{name}" "{command}"')
-def step_impl(context, image, command, name='foobar'):
+@when('docker run "{image}" "{option}" in detach mode with "{name}" "{command}"')
+@when('docker run "{image}" "{option}" in detach mode with "{name}" "{command}" and ignore error "{ignore_rc}"')
+@when('docker run "{image}" "{option}" in detach mode "{bg}" with "{name}" "{command}" and ignore error "{ignore_rc}"')
+def step_impl(context, image, command, ignore_rc="false", bg="true", name="", option=""):
     '''docker run image with detach mode'''
-    assert context.remote_cmd('command',
-                               module_args='docker run -d --name %s %s %s' % (name, image, command))
+    options = ""
+    bg = string_to_bool(context, bg)
+    ignore_rc = string_to_bool(context, ignore_rc)
+
+    if bg:
+        options += '-d '
+    if name:
+        options += '--name %s ' % name
+    if option:
+        options += option
+    options += ' ' + image + ' ' + command
+    module_args='docker run %s' % options
+    context.docker_run_result = context.remote_cmd('command',
+                                                   ignore_rc=ignore_rc,
+                                                   module_args=module_args)
+    assert context.docker_run_result, "Failed to execute '%s'" % module_args
 
 @then('check whether there is a running container')
 def step_impl(context):
@@ -86,6 +105,17 @@ def step_impl(context, name):
     '''find latest created container by name'''
     assert context.remote_cmd('shell',
                               module_args='docker ps -l | grep %s' % name)
+
+@then('check if "{matches}" is in result of docker run')
+def step_impl(context, matches):
+    '''check if string in the result of docker run'''
+    assert context.docker_run_result, "Can't get result of docker run"
+    result = context.docker_run_result[0]
+    output = "Can't find '%s'" % matches
+    if result['stdout']:
+        assert matches in result['stdout'], output
+    if result['stderr']:
+        assert matches in result['stderr'], output
 
 @when('docker build an image from local "{dockerfile}"')
 @when('docker build an image from local "{path}"/"{dockerfile}"')

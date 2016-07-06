@@ -20,8 +20,8 @@ def get_atomic_version(context):
     return atomic_version
 
 def get_atomic_status(context):
-    status_result =  context.remote_cmd(cmd='command',
-                                        module_args='atomic host status')
+    status_result = context.remote_cmd(cmd='command',
+                                       module_args='atomic host status')
 
     assert status_result, "Error running 'atomic host status'"
 
@@ -78,9 +78,9 @@ def get_atomic_host_tree_num(context):
     return len(get_atomic_status(context))
 
 
-def find_mount_point(context, mountpoint):
-    '''Find atomic mount point'''
-    filter_str = "mount | grep -E '%s'" % mountpoint
+def find_mount_option(context, mount_option):
+    '''Find mount option'''
+    filter_str = "grep -E '%s' /proc/mounts" % mount_option
     filter_result = context.remote_cmd(cmd='shell',
                                        module_args=filter_str)
     return filter_result
@@ -203,7 +203,7 @@ def step_imp(context, src_file, dest_file):
     # Currently defaults to 0744 for permissions
     copy_result = context.remote_cmd(cmd='copy',
                                      module_args='src=%s dest=%s mode=0744' %
-                                                 (src_file, dest_file))
+                                     (src_file, dest_file))
 
     assert copy_result, \
         ("Error copying local file %s to remote destination %s" %
@@ -224,7 +224,7 @@ def step_impl(context, remote_file, local_dir):
     # Retrieve a remote file to a local directory
     fetch_result = context.remote_cmd(cmd='fetch',
                                       module_args='src=%s dest=%s flat=yes' %
-                                                  (remote_file, local_dir))
+                                      (remote_file, local_dir))
 
     assert fetch_result, \
         ("Error fetching remote file %s to local directory %s" %
@@ -250,7 +250,7 @@ def step_impl(context):
 @given(u'there is "{num}" atomic host tree deployed')
 @then(u'there is "{num}" atomic host tree deployed')
 def step_impl(context, num):
-    context.ah_tree_num = get_atomic_host_tree_num(context) 
+    context.ah_tree_num = get_atomic_host_tree_num(context)
     assert context.ah_tree_num == int(num), \
             "Did not find the expected number of deployments (%s)" % num
 
@@ -272,8 +272,6 @@ def step_impl(context):
     assert context.ah_tree_num == 1 or is_select_old_version(context), \
            ("Atomic host tree deployed in a new version. "
             "Current status is:\n%s" % context.atomic_host_status)
-    
-
 
 @then(u'atomic host rollback should return a deployment error')
 def step_impl(context):
@@ -464,8 +462,8 @@ def step_impl(context):
 @when(u'rollback occurs multiple times')
 def step_impl(context):
     for l in range(10):
-            context.execute_steps(u'''
-                When atomic host rollback is successful
+        context.execute_steps(u'''
+            When atomic host rollback is successful
             ''')
 
 
@@ -480,56 +478,63 @@ def step_impl(context, name=None):
         container = get_running_container_id(context)
     assert container, "No running container"
     assert context.remote_cmd('command',
-                               module_args='atomic stop %s' % container)
+                              module_args='atomic stop %s' % container)
 
 
-@when(u'atomic mount image "{name}" to a specified "{mountpoint}"')
-def step_impl(context, name, mountpoint):
+@when(u'atomic mount image "{name}" to a specified "{mount_option}"')
+@when(u'atomic mount image "{name}" with "{option}" to a specified "{mount_option}"')
+def step_impl(context, name, mount_option, ignore_rc=False, option=""):
     '''mount image to a specified directory'''
     image_id = get_atomic_image_id_by_name(context, name)
     assert image_id, "Can't find image '%s' id"  % name
+    args = "%s %s %s" % (option, image_id, mount_option)
+    if option == "--live":
+        ignore_rc = True
+
     mount_result = context.remote_cmd(cmd='command',
-                                      module_args='atomic mount %s '
-                                                  '%s' % (image_id,
-                                                          mountpoint))
+                                      ignore_rc=ignore_rc,
+                                      module_args='atomic mount %s' % args)
 
-    assert mount_result is not None, "Failed to mount image '%s'" % name
+    if option == "--live":
+        assert 'non-running' in mount_result[0]['stderr'], "Error can mount image with %s" % option
+    else:
+        assert mount_result is not None, "Failed to mount image '%s'" % name
 
 
-@when(u'atomic mount container "{name}" to a specified "{mountpoint}"')
-def step_impl(context, name, mountpoint):
+@when(u'atomic mount container "{name}" to a specified "{mount_option}"')
+@when(u'atomic mount container "{name}" with "{option}" to a specified "{mount_option}"')
+def step_impl(context, name, mount_option, option=""):
     '''mount container to a specified directory'''
+    args = "%s %s %s" % (option, name, mount_option)
     mount_result = context.remote_cmd(cmd='command',
-                                      module_args='atomic mount %s '
-                                                  '%s' % (name,
-                                                          mountpoint))
+                                      module_args='atomic mount %s' % args)
 
     assert mount_result is not None, "Failed to mount container '%s'" % name
 
 
-@then(u'check whether atomic mount point "{mountpoint}" exists')
-def step_impl(context, mountpoint):
-    '''check whether atomic mount point exists'''
-    filter_result = find_mount_point(context, mountpoint)
-    assert filter_result, "Error while finding mount point %s" % mountpoint
+@then(u'check whether mount option "{mount_option}" exists')
+def step_impl(context, mount_option):
+    '''check whether mount option exists'''
+    filter_result = find_mount_option(context, mount_option)
+    assert filter_result, "Error while finding mount option %s" % mount_option
 
 
-@when(u'atomic unmount image from previous "{mountpoint}"')
-@when(u'atomic unmount container from previous "{mountpoint}"')
-def step_impl(context, mountpoint):
+@when(u'atomic unmount image from previous "{mount_option}"')
+@when(u'atomic unmount container from previous "{mount_option}"')
+def step_impl(context, mount_option):
     '''unmount container or image from previous mounted directory'''
     unmount_result = context.remote_cmd(cmd='command',
-                                        module_args='atomic unmount %s' % mountpoint)
+                                        module_args='atomic unmount %s' % mount_option)
 
     assert unmount_result, "Error while running 'atomic unmount'"
 
 
-@then(u'check whether "{mountpoint}" does not exist')
-@then(u'check whether atomic mount point "{mountpoint}" does not exist')
-def step_impl(context, mountpoint):
-    '''check whether atomic mount point does not exist'''
-    filter_result = find_mount_point(context, mountpoint)
-    assert filter_result is not None, "Error mount point %s still exists" % mountpoint
+@then(u'check whether "{mount_option}" does not exist')
+@then(u'check whether mount option "{mount_option}" does not exist')
+def step_impl(context, mount_option):
+    '''check whether mount option does not exist'''
+    filter_result = find_mount_option(context, mount_option)
+    assert filter_result is not None, "Error mount option %s still exists" % mount_option
 
 @when(u'atomic update latest "{image}" from repository')
 def step_impl(context, image):
@@ -606,7 +611,7 @@ def step_impl(context, list_type):
 
     rpm_list_res = context.remote_cmd(cmd='shell',
                                       module_args='rpm -qa | sort > /var/qe/%s_rpm_list' %
-                                                  list_type)
+                                      list_type)
 
     assert rpm_list_res, "Error retrieving list of installed RPMs"
 
@@ -690,25 +695,25 @@ def step_impl(context, image, label=''):
 @when(u'Compare the RPMs with "{arguments}" between "{imageA}" and "{imageB}"')
 @when(u'Compare the RPMs between "{imageA}" and "{imageB}" are "{rpms}" RPMs based')
 def step_impl(context, imageA, imageB, rpms='yes', arguments=''):
-   '''Compare the RPMs found in two different images or containers'''
-   options = arguments + ' ' + imageA + ' ' + imageB
-   result = context.remote_cmd(cmd='command',
-                               module_args='atomic diff %s' % options)
-   same_image_msg = "The %s is the same to %s!!" % (imageA, imageB)
-   diff_image_msg = "The %s is different from %s!!" % (imageA, imageB)
+    '''Compare the RPMs found in two different images or containers'''
+    options = arguments + ' ' + imageA + ' ' + imageB
+    result = context.remote_cmd(cmd='command',
+                                module_args='atomic diff %s' % options)
+    same_image_msg = "The %s is the same to %s!!" % (imageA, imageB)
+    diff_image_msg = "The %s is different from %s!!" % (imageA, imageB)
 
-   if rpms == 'no':
-       assert "not RPM based" not in result, "The image is not RPM based!!"
+    if rpms == 'no':
+        assert "not RPM based" not in result, "The image is not RPM based!!"
 
-   if rpms == 'yes' and imageA != imageB:
-       assert result, diff_image_msg
-   else:
-       if 'r' in arguments and 'json' not in arguments:
-           assert "have no different RPMs" not in result, same_image_msg
-       elif 'n' not in arguments or arguments == '' and 'json' not in arguments:
-           assert "no file differences" not in result, same_image_msg
-       else:
-           assert result, diff_image_msg
+    if rpms == 'yes' and imageA != imageB:
+        assert result, diff_image_msg
+    else:
+        if 'r' in arguments and 'json' not in arguments:
+            assert "have no different RPMs" not in result, same_image_msg
+        elif 'n' not in arguments or arguments == '' and 'json' not in arguments:
+            assert "no file differences" not in result, same_image_msg
+        else:
+            assert result, diff_image_msg
 
 
 @when(u'List default scanners')
@@ -731,7 +736,7 @@ def step_impl(context, scanner):
 @when(u'Scan "{target}" with "{scanner}" and "{scan_type}"')
 @when(u'Scan "{target}" with "{scanner}" and "{scan_type}" "{options}"')
 def step_impl(context, target, scanner='openscap', scan_type='cve',
-    options='--verbose'):
+              options='--verbose'):
     '''Scan images or/and containers with scanner and scan type'''
     scan_result = atomic_scanner(context, target, scanner, scan_type, options)
     context.scan_result = scan_result
@@ -754,3 +759,29 @@ def step_impl(context, matches):
 
     else:
         assert matches not in result, output
+
+@then(u'check "{container}" "{mount_option}"')
+@then(u'check "{container}" "{mount_option}" "{option}"')
+def step_impl(context, container, mount_option, option=None):
+    '''Check mount point permission in the container'''
+    matches = ""
+    result = ""
+    expected_output = "Read-only"
+    target_file = os.path.join('%s' % mount_option, 'tmp/test')
+    mkfile = context.remote_cmd('file',
+                                module_args='path=%s state=touch' % target_file)
+    if not option:
+        result = mkfile[0]['msg']
+        matches = '%s.*ro,context=\\"system_u:object_r:svirt_sandbox_file_t.*\\",nosuid,nodev.*' % mount_option
+    if option == "--live":
+        result = mkfile[0]['dest']
+        expected_output = target_file
+        matches = '%s.*rw,context=\\"system_u:object_r:svirt_sandbox_file_t.*\\",relatime,nouuid.*' % mount_option
+    if option == "--shared":
+        result = mkfile[0]['msg']
+        matches = '%s.*ro,context=system_u:object_r:usr_t:s0,nosuid,nodev,relatime,nouuid.*' % mount_option
+
+    assert expected_output in result, "Error cannot find '%s' in '%s'" % (matches, result)
+
+    assert context.remote_cmd('shell',
+                              module_args='grep -E "%s" /proc/mounts' % matches)
