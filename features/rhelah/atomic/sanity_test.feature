@@ -13,12 +13,12 @@ Background: Atomic hosts are discovered
   @mount_image_to_path
   Scenario: 2. mount image to a specified directory
        When atomic mount image "centos" to a specified "/mnt"
-       Then check whether atomic mount point "/var/mnt" exists
+       Then check whether mount option "/var/mnt" exists
 
   @unmount_image_from_path
   Scenario: 3. unmount image previously mounted
        When atomic unmount image from previous "/mnt"
-       Then check whether atomic mount point "/var/mnt" does not exist
+       Then check whether mount option "/var/mnt" does not exist
 
   @compare_the_same_rpm_image
   Scenario: 4. Compare the RPMs in 2 same images
@@ -33,12 +33,12 @@ Background: Atomic hosts are discovered
   @mount_container_to_path
   Scenario: 6. mount running container by name to a specified directory
        When atomic mount container "mount_test" to a specified "/mnt"
-       Then check whether atomic mount point "/var/mnt" exists
+       Then check whether mount option "/var/mnt" exists
 
   @unmount_container_from_path
   Scenario: 7. unmount container previously mounted
        When atomic unmount container from previous "/mnt"
-       Then check whether atomic mount point "/var/mnt" does not exist
+       Then check whether mount option "/var/mnt" does not exist
 
   @stop_container
   Scenario: 8. atomic stop previous running container
@@ -130,17 +130,17 @@ Background: Atomic hosts are discovered
   @remove_pulled_busybox_image
   Scenario: 26. Remove busybox image
        Then remove docker image "busybox"
-         and Check whether "busybox" is removed from system
+        and Check whether "busybox" is removed from system
 
   @remove_built_apache_image
   Scenario: 27. Remove apache image
        Then remove docker image "centos/apache"
-         and Check whether "centos/apache" is removed from system
+        and Check whether "centos/apache" is removed from system
 
   @remove_pulled_centos_image
   Scenario: 28. Remove centos image
        Then remove docker image "centos"
-         and Check whether "centos" is removed from system
+        and Check whether "centos" is removed from system
 
   @rollback_host
   Scenario: 29. Rollback to the original deployment
