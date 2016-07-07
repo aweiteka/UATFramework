@@ -29,6 +29,10 @@ def exec_service_cmd(context, action, service_name, host=None):
 
     return result[0]['stdout']
 
+def string_to_bool(context, string):
+    '''convert string to bool'''
+    bool_dict = {'false':False, 'False': False, 'true':True, 'True': True}
+    return bool_dict[string]
 
 @given(u'get the services from configure file')
 def step_impl(context):
