@@ -11,3 +11,52 @@ target_host = cihosts
 target_host = cihosts
 [service_check]
 all = etcd
+[flags_check]
+all = etcd
+etcd_conf_file = /etc/etcd/etcd.conf
+[key_test]
+stop_services = firewalld
+restart_services = etcd
+all = etcd
+restart_services = etcd
+etcdclient_type = curl
+etcd_conf_file = /etc/etcd/etcd.conf
+[key_test_ttl]
+stop_services = firewalld
+restart_services = etcd
+etcdclient_type = curl
+etcd_conf_file = /etc/etcd/etcd.conf
+[key_test_watch]
+stop_services = firewalld
+restart_services = etcd
+test_timeout = 30
+etcdclient_type = curl
+etcd_conf_file = /etc/etcd/etcd.conf
+[cluster_static]
+test_timeout = 80
+etcd_server_type = etcd
+stop_services = etcd firewalld
+etcd_conf_file = /etc/etcd/etcd.conf
+etcdclient_type = etcdctl
+[cluster_discovery]
+stop_services = firewalld
+restart_services = etcd
+test_timeout = 80
+etcd_server_type = etcd
+stop_services = etcd firewalld
+etcd_conf_file = /etc/etcd/etcd.conf
+etcdclient_type = etcdctl
+[proxy_test]
+stop_services = firewalld
+restart_services = etcd
+test_timeout = 80
+etcd_server_type = etcd
+stop_services = etcd firewalld
+etcd_conf_file = /etc/etcd/etcd.conf
+etcdclient_type = etcdctl
+[secure_with_TLS]
+test_timeout = 80
+etcd_server_type = etcd
+stop_services = etcd firewalld
+etcd_conf_file = /etc/etcd/etcd.conf
+etcdclient_type = curl
