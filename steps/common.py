@@ -119,12 +119,12 @@ def step_impl(context, status):
 @given(u'"{host}" hosts from dynamic inventory')
 def step_impl(context, host):
     context.inventory = "dynamic"
-    context.target_host = host 
+    context.target_host = host
 
 @given(u'"{host}" hosts from static inventory')
 def step_impl(context, host):
     context.inventory = "static"
-    context.target_host = host 
+    context.target_host = host
 
 @given(u'"{rpm}" is already installed on "{host}"')
 def step_impl(context, rpm, host):
@@ -144,7 +144,7 @@ def step_impl(context, rpm):
     '''Install RPM on host but fail if not already installed'''
     context.execute_steps(u"""
     given "{package_name}" is already installed on "{host}"
-    """.format(package_name=rpm,host=context.target_host))
+    """.format(package_name=rpm, host=context.target_host))
 
 @given(u'"{rpms}" are already installed on "{host}"')
 def step_impl(context, rpms, host):
@@ -164,7 +164,7 @@ def step_impl(context, rpms):
     '''Install RPM on host but fail if not already installed'''
     context.execute_steps(u"""
     "given {package_names}" are already installed on "{host}"
-    """.format(package_names=rpms,host=context.target_host))
+    """.format(package_names=rpms, host=context.target_host))
 
 @given(u'"{unit}" is already running on "{host}"')
 def step_impl(context, unit, host):
@@ -210,10 +210,12 @@ def step(context, host):
     host: a host from the ansible inventory file'''
     assert context.remote_cmd('ping', host)
 
+@then('run command "{cmd}"')
 @given('run command "{cmd}" on "{host}"')
 @when('run command "{cmd}" on "{host}"')
 @then('run command "{cmd}" on "{host}"')
-def step(context, cmd, host):
+@then('run command "{cmd}" ignore error "{ignore_rc}"')
+def step(context, cmd, host=None, ignore_rc='false'):
     '''Run an Ansible module on a host directly from scenario
 
     cmd: a module name plus arguments
@@ -221,6 +223,7 @@ def step(context, cmd, host):
          or...
          <module> <param>
     host: a host from the inventory file'''
+    ignore_rc = string_to_bool(context, ignore_rc)
     module, args = None, None
     if ' ' in cmd:
         # we only split on the first space to get the module name
@@ -230,6 +233,7 @@ def step(context, cmd, host):
         module = cmd
     assert context.remote_cmd(module,
                               host,
+                              ignore_rc=ignore_rc,
                               module_args=args)
 
 @when('checkout the git repo "{repo}" on "{host}"')

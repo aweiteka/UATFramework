@@ -6,7 +6,8 @@ import time
 import filecmp
 from behave import *
 from distutils.version import LooseVersion
-from docker import get_image_id_by_name, get_running_container_id
+from docker import get_image_id_by_name, get_running_container_id, string_to_bool
+from ostree import get_ostree_admin_status
 
 
 def get_atomic_version(context):
@@ -785,3 +786,29 @@ def step_impl(context, container, mount_option, option=None):
 
     assert context.remote_cmd('shell',
                               module_args='grep -E "%s" /proc/mounts' % matches)
+
+@when(u'switch atomic host to "{mode}" mode')
+@when(u'switch atomic host to development mode')
+def step_impl(context, mode="development"):
+    '''Prepare the current deployment for hotfix or development mode'''
+    opt_dict = {"development": "", "hotfix": "--hotfix"}
+    assert context.remote_cmd(cmd='command',
+                              module_args='atomic host unlock %s' % opt_dict[mode])
+
+@then(u'check unlock status "{mode_str}" exists')
+@then(u'check unlock status "{mode_str}" does not exists "{ignore_rc}"')
+def step_impl(context, mode_str, ignore_rc='false'):
+    '''Check unlock status'''
+    rc = string_to_bool(context, ignore_rc)
+    ostree_status = get_ostree_admin_status(context)
+    if rc:
+        assert mode_str not in ostree_status, "Can still find '%s' in %s" % (mode_str, ostree_status)
+    else:
+        assert mode_str in ostree_status, "Can't find '%s' in %s" % (mode_str, ostree_status)
+
+@when(u'create file "{target_file}"')
+def step_impl(context, target_file="/usr/unlock_test"):
+    ''''''
+    mkfile = context.remote_cmd('file',
+                                module_args='path=%s state=touch' % target_file)
+    assert mkfile, "Failed to create %s" % target_file
