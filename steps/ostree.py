@@ -4,14 +4,19 @@ import re
 from behave import *
 
 
-@then(u'undeploy the unselected deployment')
-def step_impl(context):
+def get_ostree_admin_status(context):
+    '''get ostree admin status'''
     ostree_result = context.remote_cmd(cmd='command',
                                        module_args='ostree admin status')
+    assert ostree_result, "Can not get status result"
+    result = ostree_result[0]['stdout']
+    assert result, "Can not get deployments"
+    return result
 
-    assert ostree_result, "Can not get ostree status"
 
-    ostree_status = ostree_result[0]['stdout']
+@then(u'undeploy the unselected deployment')
+def step_impl(context):
+    ostree_status = get_ostree_admin_status(context)
     ostree_entry = re.findall(r'.*[\d\w\.]{66}', ostree_status)
 
     for index, item in enumerate(ostree_entry):
