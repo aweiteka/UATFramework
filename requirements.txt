@@ -2,3 +2,4 @@ requests
 behave
 ansible<2.0
 jinja2
+pyopenssl
