@@ -5,10 +5,11 @@ from __future__ import print_function
 import logging
 import os
 import re
+import sys
 
 from datetime import datetime
 
-import env_setup 
+import env_setup
 
 
 if os.getenv("WORKSPACE") is not None:
@@ -35,6 +36,7 @@ fh.setFormatter(my_formatter)
 
 file_logger.addHandler(fh)
 
+
 def before_all(context):
     '''Behave-specific function that runs before anything else'''
 
@@ -46,6 +48,9 @@ def before_all(context):
 
     context.test_cfg = ConfigParser.ConfigParser()
     context.test_cfg.read('config/test.cfg')
+
+    path = os.path.dirname(sys.modules['env_setup'].__file__)
+    context.src_dir = os.path.join(path, "resources")
 
     for key, value in context.test_cfg.items("default"):
         setattr(context, key, value)
@@ -67,7 +72,8 @@ def before_all(context):
         AUTH = (config.get(app, 'user'), config.get(app, 'pass'))
         VERIFY = False
 
-        url = '/'.join([config.get(app, 'url'), config.get(app, 'api_path'), path])
+        url = '/'.join([config.get(app, 'url'),
+                        config.get(app, 'api_path'), path])
         if payload is None:
             if method is None:
                 # GET request
@@ -91,7 +97,8 @@ def before_all(context):
                          headers=post_headers,
                          data=payload)
         if result.raise_for_status():
-            print('Status %s: %s' % (result.status_code, result.json()['error']))
+            print('Status %s: %s' % (result.status_code,
+                                     result.json()['error']))
             return False
         if app is "satellite":
             if payload is None and method is None:
@@ -104,7 +111,7 @@ def before_all(context):
 
     context.api = api
 
-    def remote_cmd(cmd, host=None, ignore_rc=False, **kwargs):
+    def remote_cmd(cmd, host=None, ignore_rc=False, async=False, **kwargs):
         '''Interface to run a command on a remote host using Ansible modules
 
         host: name of host of remote target system in ansible inventory file
@@ -112,6 +119,7 @@ def before_all(context):
         cmd: an Ansible module
         ignore_rc: occasionally the command is expected to fail.  Set this to
                    True so that the output is retained and can be used
+        async: run the cmd asynchronous on a remote host.
         module_args: module args in the form of "key1=value1 key2=value2"
         Returns list of values if all hosts successful, otherwise False'''
 
@@ -121,11 +129,12 @@ def before_all(context):
 
         if context.inventory == "dynamic":
             # use custom dynamic hosts script
-            inventory = ansible.inventory.Inventory(config.get('ansible', 'dynamic_inventory_script'))
+            ansible_config = config.get('ansible', 'dynamic_inventory_script')
         else:
             # default to static file
-            inventory = ansible.inventory.Inventory(config.get('ansible', 'inventory'))
+            ansible_config = config.get('ansible', 'inventory')
 
+        inventory = ansible.inventory.Inventory(ansible_config)
         # check value of host. if host is not None, we assume the user has
         # supplied a host arg to remote_cmd(). otherwise, it is passed
         # along in the context object.
@@ -137,13 +146,21 @@ def before_all(context):
         # the 'context' object can basically hold whatever we want.
         # if we stash the result from Ansible, we can inspect it or log it
         # later
-        context.result = ansible.runner.Runner(
-                 module_name=cmd,
-                 inventory=inventory,
-                 pattern=host,
-                 #remote_user=remote_user,
-                 **kwargs
-        ).run()
+        if async:
+            result = ansible.runner.Runner(module_name=cmd,
+                                           inventory=inventory,
+                                           pattern=host,
+                                           **kwargs
+                                           ).run_async(context.test_timeout)
+            context.result = result[0]
+            poller = result[1]
+            return poller
+        else:
+            context.result = ansible.runner.Runner(module_name=cmd,
+                                                   inventory=inventory,
+                                                   pattern=host,
+                                                   **kwargs
+                                                   ).run()
 
         # TODO support lists of hosts
         if context.result['dark']:
@@ -155,13 +172,45 @@ def before_all(context):
         else:
             values = []
             for key, value in context.result['contacted'].iteritems():
-                if ignore_rc is False and 'rc' in value.keys() and value['rc'] != 0:
+                if (ignore_rc is False
+                        and 'rc' in value.keys() and value['rc'] != 0):
                     return False
                 else:
                     values.append(value)
             return values
 
     context.remote_cmd = remote_cmd
+
+    def get_hosts():
+        """
+        Get host group name and ip pairs from inventory.
+
+        :return: the ips for each group in inventory.
+        :rtype: dictionary
+        """
+        import ansible.runner
+        if context.inventory == "dynamic":
+            # use custom dynamic hosts script
+            host_list = config.get('ansible', 'dynamic_inventory_script')
+        else:
+            # default to static file
+            host_list = config.get('ansible', 'inventory')
+        inventory = ansible.inventory.Inventory(host_list)
+
+        host_groups = {"all": []}
+        for group in inventory.groups:
+            group_name = group.name
+            if group_name != "all":
+                host_groups[group.name] = []
+            for host in group.hosts:
+                host_groups[group.name].append(host.name)
+                if host.name not in host_groups["all"]:
+                    host_groups["all"].append(host.name)
+
+        return host_groups
+
+    context.get_hosts = get_hosts
+
 
 # After each step, we will examine the status and log any results from Ansible
 # if they exist
@@ -207,7 +256,6 @@ def before_feature(context, feature):
         except Exception, err:
             print("%s failed with following error: %s" % (test_tag,
                                                           err.message))
-
 
 
 def after_feature(context, feature):

@@ -81,6 +81,30 @@ def step_impl(context):
     assert not svcs_not_exist, emsg
 
 
+@then(u'setup services based on configure file')
+def step_impl(context):
+    """Set up services status based on the options in cfg files.
+       The actions is set as prefix in options, and host is set
+       as suffix. If no host is specific, the action will be applied
+       in all hosts.
+    """
+    hosts = context.get_hosts().keys()
+    hosts.remove("ungrouped")
+    hosts.remove("all")
+    hosts.insert(0, "all")
+    for action in ["enable", "disable", "restart", "stop"]:
+        for host in hosts:
+            services = []
+            option_name = "%s_services" % action
+            if hasattr(context, option_name):
+                services = getattr(context, option_name).split()
+            option_name = "%s_services_%s" % (action, host)
+            if hasattr(context, option_name):
+                services = getattr(context, option_name).split()
+            for service in services:
+                exec_service_cmd(context, action, service, host)
+
+
 @given(u'"{action}" "{status}" services')
 @then(u'"{action}" "{status}" services')
 def step_impl(context, action, status):
@@ -95,7 +119,7 @@ def step_impl(context, action, status):
 @when(u'services status is "{status}"')
 @then(u'services status is "{status}"')
 def step_impl(context, status):
-    if status in ['running', 'dead', 'active', 'inactive']:
+    if status in ['running', 'dead', 'active', 'inactive', 'start']:
         pattern = r"Active:.*?(%s)" % status
         msg_pattern = r"Active:.*"
     else:

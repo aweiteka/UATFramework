@@ -46,12 +46,13 @@ def ah_upgrade_no_reboot_prepare(context):
 def services_status_prepare(context):
     context.execute_steps(u"""
         Given get the services from configure file
-         Then update services original status""")
+         Then update services original status
+          And setup services based on configure file""")
 
 
 def services_status_cleanup(context):
     context.execute_steps(u"""
-       When "enable" "all" services
+      Given "enable" "all" services
         And "disable" "disabled" services
        Then wait "30" seconds for "all" to reboot
         """)
