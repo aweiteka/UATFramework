@@ -36,6 +36,7 @@ fh.setFormatter(my_formatter)
 
 file_logger.addHandler(fh)
 
+
 def before_all(context):
     '''Behave-specific function that runs before anything else'''
 
@@ -71,7 +72,8 @@ def before_all(context):
         AUTH = (config.get(app, 'user'), config.get(app, 'pass'))
         VERIFY = False
 
-        url = '/'.join([config.get(app, 'url'), config.get(app, 'api_path'), path])
+        url = '/'.join([config.get(app, 'url'),
+                        config.get(app, 'api_path'), path])
         if payload is None:
             if method is None:
                 # GET request
@@ -95,7 +97,8 @@ def before_all(context):
                          headers=post_headers,
                          data=payload)
         if result.raise_for_status():
-            print('Status %s: %s' % (result.status_code, result.json()['error']))
+            print('Status %s: %s' % (result.status_code,
+                                     result.json()['error']))
             return False
         if app is "satellite":
             if payload is None and method is None:
@@ -126,11 +129,12 @@ def before_all(context):
 
         if context.inventory == "dynamic":
             # use custom dynamic hosts script
-            inventory = ansible.inventory.Inventory(config.get('ansible', 'dynamic_inventory_script'))
+            ansible_config = config.get('ansible', 'dynamic_inventory_script')
         else:
             # default to static file
-            inventory = ansible.inventory.Inventory(config.get('ansible', 'inventory'))
+            ansible_config = config.get('ansible', 'inventory')
 
+        inventory = ansible.inventory.Inventory(ansible_config)
         # check value of host. if host is not None, we assume the user has
         # supplied a host arg to remote_cmd(). otherwise, it is passed
         # along in the context object.
@@ -143,22 +147,20 @@ def before_all(context):
         # if we stash the result from Ansible, we can inspect it or log it
         # later
         if async:
-            context.result, poller = ansible.runner.Runner(
-                     module_name=cmd,
-                     inventory=inventory,
-                     pattern=host,
-                     #remote_user=remote_user,
-                     **kwargs
-            ).run_async(context.test_timeout)
+            result = ansible.runner.Runner(module_name=cmd,
+                                           inventory=inventory,
+                                           pattern=host,
+                                           **kwargs
+                                           ).run_async(context.test_timeout)
+            context.result = result[0]
+            poller = result[1]
             return poller
         else:
-            context.result = ansible.runner.Runner(
-                     module_name=cmd,
-                     inventory=inventory,
-                     pattern=host,
-                     #remote_user=remote_user,
-                     **kwargs
-            ).run()
+            context.result = ansible.runner.Runner(module_name=cmd,
+                                                   inventory=inventory,
+                                                   pattern=host,
+                                                   **kwargs
+                                                   ).run()
 
         # TODO support lists of hosts
         if context.result['dark']:
@@ -170,7 +172,8 @@ def before_all(context):
         else:
             values = []
             for key, value in context.result['contacted'].iteritems():
-                if ignore_rc is False and 'rc' in value.keys() and value['rc'] != 0:
+                if (ignore_rc is False
+                        and 'rc' in value.keys() and value['rc'] != 0):
                     return False
                 else:
                     values.append(value)
@@ -253,7 +256,6 @@ def before_feature(context, feature):
         except Exception, err:
             print("%s failed with following error: %s" % (test_tag,
                                                           err.message))
-
 
 
 def after_feature(context, feature):
