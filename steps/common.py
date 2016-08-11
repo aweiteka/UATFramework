@@ -2,8 +2,43 @@
 
 import os
 import re
+import random
+import string
 
 from behave import *
+
+
+def gen_uuid(uuid_length=32):
+    """
+    Generate a new UUID.
+    :param uuid_length: The length of uuid
+    :type uuid_length: int
+    :return: An uuid
+    :rtype: string
+    """
+    uuid = ""
+    for _ in range(uuid_length):
+        uuid += random.choice(string.lowercase)
+
+    return uuid
+
+
+def get_group_name(host_groups, host_ip):
+    """
+    Get the group name of the host based on the host ip.
+    :param host_groups: Hosts ip grouped by group name in ansible inventory
+    :type host_groups: dict
+    :param host_ip: The ip of the host
+    :type host_ip: str
+    :return: Group name in ansible inventory
+    :rtype: str
+    """
+    group_name = None
+    for group in host_groups:
+        if len(host_groups[group]) == 1 and host_groups[group][0] == host_ip:
+            group_name = group
+            break
+    return group_name
 
 
 def exec_service_cmd(context, action, service_name, host=None):
@@ -140,6 +175,26 @@ def step_impl(context, status):
     assert emsg == "", emsg
 
 
+@when(u'services "{svcs}" status is "{status}" on "{host}"')
+def step_impl(context, svcs, status, host):
+    if status in ['running', 'dead', 'active', 'inactive', 'start']:
+        pattern = r"Active:.*?(%s)" % status
+        msg_pattern = r"Active:.*"
+    else:
+        pattern = r"Loaded:.*?(%s)" % status
+        msg_pattern = r"Loaded:.*"
+
+    emsg = ""
+    for svc in svcs.split():
+        current_status = exec_service_cmd(context, "status", svc, host)
+        if not re.findall(pattern, current_status):
+            msg = re.findall(msg_pattern, current_status)[0]
+            emsg += ("Service %s in host %s is not %s but '%s'" %
+                     (svc, host, status, msg))
+
+    assert emsg == "", emsg
+
+
 @given(u'"{host}" hosts from dynamic inventory')
 def step_impl(context, host):
     context.inventory = "dynamic"
@@ -201,6 +256,26 @@ def step_impl(context, unit, host):
             assert i['changed'] is False
     else:
         assert False
+
+
+@given(u'file "{file_path}" is exist on "{host}"')
+def step_impl(context, file_path, host):
+    """
+    Ensure request file is exist on the target.
+    :param file_path: Request file need to be checked.
+    :type file_path: str
+    :param host: Host to check.
+    :type host: str
+    """
+    if hasattr(context, file_path):
+        file_path = getattr(context, file_path)
+    result = context.remote_cmd(cmd='file',
+                                host=host,
+                                module_args="path=%s state=file" % file_path)
+
+    emsg = "%s is not exist" % file_path
+    assert 'state' not in result[0] or result[0]['state'] != 'absent', emsg
+
 
 @then(u'"{unit}" is started and enabled on "{host}"')
 def step_impl(context, unit, host):

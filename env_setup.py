@@ -56,3 +56,17 @@ def services_status_cleanup(context):
         And "disable" "disabled" services
        Then wait "30" seconds for "all" to reboot
         """)
+
+
+def etcd_prepare(context):
+    context.execute_steps(u"""
+       Given get etcd help
+         And get etcd.conf context from "all"
+        Then setup services based on configure file
+        """)
+
+
+def etcd_cleanup(context):
+    context.execute_steps(u"""
+        Then set etcd.conf to "/var/tmp/etcd_default" in "all"
+        """)
