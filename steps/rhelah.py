@@ -90,7 +90,7 @@ def find_mount_option(context, mount_option):
 def get_images(context):
     '''Get all installed container images on your system'''
     images_result = context.remote_cmd(cmd='command',
-                                       module_args='atomic images')
+                                       module_args='atomic images list')
     assert images_result, "Error while running 'atomic images'"
     return images_result[0]['stdout'].splitlines()
 
@@ -104,8 +104,8 @@ def get_specified_image(context, image, images_info):
         return find_image
 
     for image_line in real_images:
-        if image in image_line:
-            find_image = image_line
+        find_image = re.findall(image, image_line)
+        if find_image:
             break
     return find_image
 
@@ -486,9 +486,7 @@ def step_impl(context, name=None):
 @when(u'atomic mount image "{name}" with "{option}" to a specified "{mount_option}"')
 def step_impl(context, name, mount_option, ignore_rc=False, option=""):
     '''mount image to a specified directory'''
-    image_id = get_atomic_image_id_by_name(context, name)
-    assert image_id, "Can't find image '%s' id"  % name
-    args = "%s %s %s" % (option, image_id, mount_option)
+    args = "%s %s %s" % (option, name, mount_option)
     if option == "--live":
         ignore_rc = True
 
@@ -582,7 +580,7 @@ def step_impl(context):
 def step_impl(context):
     '''Check whether specified image is installed on your system'''
     images_info = get_images(context)
-    find_result = get_specified_image(context, '* <none>', images_info)
+    find_result = get_specified_image(context, '\*\s+<none>', images_info)
 
     assert find_result, "Error can't find dangling images on the system"
 
@@ -591,14 +589,14 @@ def step_impl(context):
 def step_impl(context):
     '''Remove all dangling images on your system'''
     assert context.remote_cmd(cmd='command',
-                              module_args='atomic images --prune')
+                              module_args='atomic images prune')
 
 
 @then(u'Check whether dangling images do not exist')
 def step_impl(context):
     '''Check whether dangling images are removed from your system'''
     images_info = get_images(context)
-    find_result = get_specified_image(context, '* <none>', images_info)
+    find_result = get_specified_image(context, '\*\s+<none>', images_info)
 
     assert not find_result, "Error still can find dangling images on the system"
 
